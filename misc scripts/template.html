@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            height: 80%;
+        }
+
+        .message {
+            margin: 10px 0 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #d1f7c4;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            /* background-color: #e6e6e6; */
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 15px 15px 0;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .navigation {
+            display: flex;
+            align-items: center; /* Center vertically */
+            margin-bottom: 5px; /* Adjust margin for spacing */
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            font-size: 24px; /* Button size */
+            cursor: pointer;
+            color: #007bff; /* Button color */
+        }
+
+        .nav-button:disabled {
+            color: #cccccc; /* Disabled button color */
+            cursor: not-allowed; /* Cursor style when disabled */
+        }
+
+        .index-display {
+            font-size: 14px; /* Index display size */
+            color: #777; /* Index display color */
+            margin-left: 5px; /* Minimal spacing between buttons and index */
+        }
+    </style>
+    <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">chat_container_code</div>
+    <script>
+        // Sample questions and responses
+        const chatData = chat_data;
+
+        // Object to store current response indices for each question
+        const currentResponseIndices = {};
+
+        const converter = new showdown.Converter(); // Create a new Showdown converter
+
+      // Function to load responses based on the question ID
+      function loadResponses(questionId) {
+        const responses = chatData[questionId];
+        
+        if (responses.length > 1) {
+            const botResponseElement = document.querySelector(`.${questionId.replace('question-', 'bot-response-')}`);
+            const indexDisplay = document.getElementById(`index-display-${questionId.replace('question-', '')}`);
+
+            // Load initial response
+            // botResponseElement.textContent = responses[0];
+            botResponseElement.innerHTML = converter.makeHtml(responses[0]);
+            indexDisplay.textContent = `1/${responses.length}`;
+
+            // Initialize the current response index for this question if it doesn't exist
+            if (!(questionId in currentResponseIndices)) {
+                currentResponseIndices[questionId] = 0;
+            }
+
+            // Load initial response
+            const currentResponseIndex = currentResponseIndices[questionId];
+
+            // Update navigation buttons
+            const prevButton = document.querySelector(`.prev-button[data-question-id="${questionId}"]`);
+            const nextButton = document.querySelector(`.next-button[data-question-id="${questionId}"]`);
+
+            function updateResponse() {
+                // botResponseElement.textContent = responses[currentResponseIndices[questionId]];
+                botResponseElement.innerHTML = converter.makeHtml(responses[currentResponseIndices[questionId]]);
+                indexDisplay.textContent = `${currentResponseIndices[questionId] + 1}/${responses.length}`;
+                prevButton.disabled = currentResponseIndices[questionId] === 0; // Disable if at first response
+                nextButton.disabled = currentResponseIndices[questionId] === responses.length - 1; // Disable if at last response
+            }
+
+            // Event listeners for navigation buttons
+            prevButton.addEventListener("click", (event) => {
+                questionId = event.target.getAttribute('data-question-id');
+                console.log("previous button clicked for button" +  " " + questionId);
+                if (currentResponseIndices[questionId] > 0) {
+                    currentResponseIndices[questionId]--;
+                    updateResponse()
+                }
+                console.log(currentResponseIndices);
+            });
+
+            nextButton.addEventListener("click", (event) => {
+                questionId = event.target.getAttribute('data-question-id');        
+                console.log("next button clicked for button" +  " " + questionId);
+                
+                if (currentResponseIndices[questionId] < responses.length - 1) {
+                    currentResponseIndices[questionId]++;
+                    updateResponse();
+                }
+                console.log(currentResponseIndices);
+            });
+        } else {
+            const botResponseElement = document.querySelector(`.${questionId.replace('question-', 'bot-response-')}`);
+
+            // Load initial response
+            botResponseElement.innerHTML = converter.makeHtml(responses[0]);
+        }
+
+        
+      }
+
+      // Load responses for all questions dynamically
+      Object.keys(chatData).forEach(questionKey => {
+        loadResponses(questionKey);
+      });
+    
+    </script>
+</body>
+</html>
