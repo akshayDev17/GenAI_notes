@@ -1,0 +1,125 @@
+[
+  {
+    "scenario_id": 1,
+    "name": "Order Stuck in Processing Loop",
+    "down_services": ["Order Management", "Payment Orchestration"],
+    "symptoms": "Orders created but not progressing to payment authorization",
+    "debug_tasks": [
+      {"service": "Order Management", "task": "Validate Payloads", "order": 1},
+      {"service": "Payment Orchestration", "task": "Test Card Processing", "order": 2},
+      {"service": "Payment Orchestration", "task": "Audit Failed Charges", "order": 3}
+    ],
+    "fix_recommendation": "Implement circuit breaker pattern between order and payment services; add dead-letter queue for failed payment events"
+  },
+  {
+    "scenario_id": 2,
+    "name": "Driver Assignment Failure",
+    "down_services": ["Driver Dispatch", "Location Tracking"],
+    "symptoms": "Orders ready but no drivers being assigned",
+    "debug_tasks": [
+      {"service": "Location Tracking", "task": "Handle GPS Dropouts", "order": 1},
+      {"service": "Driver Dispatch", "task": "Simulate No-show", "order": 2},
+      {"service": "Driver Dispatch", "task": "Audit Assignment Logs", "order": 3}
+    ],
+    "fix_recommendation": "Add fallback to static location data when GPS stream fails; implement driver availability heartbeat system"
+  },
+  {
+    "scenario_id": 3,
+    "name": "Menu Data Staleness",
+    "down_services": ["Restaurant Catalog", "Analytics"],
+    "symptoms": "Users seeing outdated menu items/prices",
+    "debug_tasks": [
+      {"service": "Restaurant Catalog", "task": "Force Cache Refresh", "order": 1},
+      {"service": "Restaurant Catalog", "task": "Validate Menu Schema", "order": 2},
+      {"service": "Analytics", "task": "Validate Data Syncs", "order": 3}
+    ],
+    "fix_recommendation": "Implement cache invalidation webhooks from restaurant POS systems; add TTL-based cache expiration"
+  },
+  {
+    "scenario_id": 4,
+    "name": "Notification Storm Failure",
+    "down_services": ["Notification", "User Profile"],
+    "symptoms": "Users receiving duplicate/missing order updates",
+    "debug_tasks": [
+      {"service": "Notification", "task": "Audit Failure Rates", "order": 1},
+      {"service": "User Profile", "task": "Anomaly Detection", "order": 2},
+      {"service": "Notification", "task": "Test Rendering", "order": 3}
+    ],
+    "fix_recommendation": "Implement notification deduplication using idempotency keys; add backpressure control to queue system"
+  },
+  {
+    "scenario_id": 5,
+    "name": "Payment Reconciliation Failure",
+    "down_services": ["Payment Orchestration", "Fraud Detection"],
+    "symptoms": "Unprocessed transactions accumulating overnight",
+    "debug_tasks": [
+      {"service": "Payment Orchestration", "task": "Reconcile Transactions", "order": 1},
+      {"service": "Fraud Detection", "task": "Generate Fraud Signals", "order": 2},
+      {"service": "Fraud Detection", "task": "Model Validation", "order": 3}
+    ],
+    "fix_recommendation": "Create idempotent reconciliation API; implement transaction verification state machine"
+  },
+  {
+    "scenario_id": 6,
+    "name": "Review Submission Backlog",
+    "down_services": ["Ratings & Reviews", "Analytics"],
+    "symptoms": "User reviews not appearing in system",
+    "debug_tasks": [
+      {"service": "Ratings & Reviews", "task": "Anomaly Detection", "order": 1},
+      {"service": "Analytics", "task": "Rebuild Aggregates", "order": 2},
+      {"service": "Ratings & Reviews", "task": "Generate Test Feedback", "order": 3}
+    ],
+    "fix_recommendation": "Implement async review processing pipeline; add schema versioning for review payloads"
+  },
+  {
+    "scenario_id": 7,
+    "name": "Location Drift Incident",
+    "down_services": ["Location Tracking", "Driver Dispatch"],
+    "symptoms": "Drivers appearing in wrong locations on map",
+    "debug_tasks": [
+      {"service": "Location Tracking", "task": "Replay Routes", "order": 1},
+      {"service": "Location Tracking", "task": "Inject Test Coordinates", "order": 2},
+      {"service": "Driver Dispatch", "task": "Calculate ETAs", "order": 3}
+    ],
+    "parallel_tasks": ["1-2"],
+    "fix_recommendation": "Add GPS signal validation using cellular triangulation; implement driver location sanity checks"
+  },
+  {
+    "scenario_id": 8,
+    "name": "Loyalty Points Calculation Failure",
+    "down_services": ["User Profile", "Order Management"],
+    "symptoms": "Points not updating after completed orders",
+    "debug_tasks": [
+      {"service": "User Profile", "task": "Track Loyalty Points", "order": 1},
+      {"service": "Order Management", "task": "Stale Order Cleanup", "order": 2},
+      {"service": "User Profile", "task": "Export Data Snapshots", "order": 3}
+    ],
+    "fix_recommendation": "Create point calculation idempotency service; implement compensation transactions for reconciliation"
+  },
+  {
+    "scenario_id": 9,
+    "name": "Multi-Service Cascade Failure",
+    "down_services": ["Payment Orchestration", "Fraud Detection", "Order Management"],
+    "symptoms": "Complete checkout system unavailability",
+    "debug_tasks": [
+      {"service": "Payment Orchestration", "task": "Test Card Processing", "order": 1},
+      {"service": "Fraud Detection", "task": "Analyze Patterns", "order": 2},
+      {"service": "Order Management", "task": "Validate Payloads", "order": 3},
+      {"service": "Fraud Detection", "task": "Block Accounts", "order": 4}
+    ],
+    "parallel_tasks": ["1-2", "3-4"],
+    "fix_recommendation": "Implement bulkhead pattern isolation; add circuit breakers with manual override capabilities"
+  },
+  {
+    "scenario_id": 10,
+    "name": "Geofencing Misalignment",
+    "down_services": ["Restaurant Catalog", "Location Tracking"],
+    "symptoms": "Restaurants not appearing in valid search areas",
+    "debug_tasks": [
+      {"service": "Restaurant Catalog", "task": "Geofence Search", "order": 1},
+      {"service": "Location Tracking", "task": "Handle GPS Dropouts", "order": 2},
+      {"service": "Restaurant Catalog", "task": "Toggle Availability", "order": 3}
+    ],
+    "fix_recommendation": "Implement polygon-based geofence validation tool; add cache warming for location-based queries"
+  }
+]

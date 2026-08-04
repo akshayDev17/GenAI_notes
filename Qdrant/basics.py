@@ -4,7 +4,8 @@ import importlib.metadata
 
 from  qdrant_client import QdrantClient
 from qdrant_client.http.models import (VectorParams, Distance, PointVectors, 
-                                       PointStruct, Payload, Filter)
+                                       PointStruct, Payload, Filter, FieldCondition,
+                                       MatchValue)
 
 from sentence_transformers import SentenceTransformer
 
@@ -53,14 +54,18 @@ def upsert_points_w_diff_payload(collection_name: str, qclient: QdrantClient,
         "A story is not just a mirror of society; it’s a hammer with which to shape it.",
         "Curiosity is the spark behind every great discovery—never let the world extinguish it.",
         "Healing begins when we stop running from our pain and finally dare to face it with compassion.",
-        "Champions aren’t made by their wins, but by how they rise after every fall."
+        "Champions aren’t made by their wins, but by how they rise after every fall.",
+        "It is not the strongest of the species that survives, nor the most intelligent, but the one most responsive to change.",
+        "In nature, nothing exists alone."
     ]
     new_payload = [
         {"author": "Elon Musk", "topic": "Technology"},
         {"author": "Margaret Atwood", "topic": "Literature"},
         {"author": "Dr. Jane Goodall", "topic": "Science"},
         {"author": "Dr. Gabor Maté", "topic": "Psychology"},
-        {"author": "Serena Williams", "topic": "Sports"}
+        {"author": "Serena Williams", "topic": "Sports"},
+        {"author": "Charles Darwin", "topic": "Biology"},
+        {"author": "Rachel Carson", "topic": "Biology"}
     ]
     new_points = [PointStruct(id = str(uuid4()), 
                               vector=encoder.encode(new_sentences[id]).tolist(),
@@ -93,13 +98,22 @@ def main() -> None:
             collection_name='my_first_collection',
             vectors_config=VectorParams(size = encoder_embed_dim, distance=Distance.COSINE)
         )
-    
-    qclient.delete('my_first_collection', points_selector=list(range(5)))
+    else:
+        qclient.delete_collection('my_first_collection')
 
-    # # print all available connections for this client
-    # print_collections(qclient)
+        # create a collection
+        qclient.create_collection(
+            collection_name='my_first_collection',
+            vectors_config=VectorParams(size = encoder_embed_dim, distance=Distance.COSINE)
+        )
 
-    # initialise the empty collection with 
+    # # Delete points from a collection using their IDs
+    # qclient.delete('my_first_collection', points_selector=list(range(5)))
+
+    # print all available connections for this client
+    print_collections(qclient)
+
+    # initialise the empty collection with some sentences
     init_fill_collection('my_first_collection', sentences, topics, qclient, encoder)
 
     # # retrieve most relevant points for given user query
@@ -113,18 +127,31 @@ def main() -> None:
     # print([point.payload for point in query_resp.points])
     # print([point.vector for point in query_resp.points])
 
-    # # upsert into a pre-existing collection, a new array of points with a 
-    # # different payload than previously existing points in the collection
-    # upsert_points_w_diff_payload(collection_name = 'my_first_collection', 
-    #                              qclient=qclient, encoder = encoder)
+    # upsert into a pre-existing collection, a new array of points with a 
+    # different payload than previously existing points in the collection
+    upsert_points_w_diff_payload(collection_name = 'my_first_collection', 
+                                 qclient=qclient, encoder = encoder)
     
     # Note: the upsert works fine.
 
-    # Lets try and filter on queried points using a payload not present for all points
+    # # Lets try and filter on queried points using a payload not present for all points
+    # query_resp = qclient.query_points(
+    #     collection_name='my_first_collection',
+    #     query = encoder.encode("Tell me about science").tolist(),
+    #     limit=4
+    # )
+    # print([(point.id, point.score, point.payload) for point in query_resp.points])
+
+    # Query works fine.
+
+    # Lets try to use a filter based on a payload property not present for all points
     query_resp = qclient.query_points(
         collection_name='my_first_collection',
         query = encoder.encode("Tell me about science").tolist(),
-        limit=4
+        limit=4,
+        query_filter = Filter(
+            should=FieldCondition(key = 'author', match = MatchValue(value='Elon Musk'))
+        )
     )
     print([(point.id, point.score, point.payload) for point in query_resp.points])
 

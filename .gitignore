@@ -1,4 +1,5 @@
 *.code-workspace
 *.env
 *ipynb_checkpoints*
-qdrant_storage/*
+**/qdrant_storage/*
+.DS_Store

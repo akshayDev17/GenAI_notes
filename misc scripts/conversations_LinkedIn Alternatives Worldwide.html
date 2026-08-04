@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            height: 80%;
+        }
+
+        .message {
+            margin: 10px 0 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #d1f7c4;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            /* background-color: #e6e6e6; */
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 15px 15px 0;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .navigation {
+            display: flex;
+            align-items: center; /* Center vertically */
+            margin-bottom: 5px; /* Adjust margin for spacing */
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            font-size: 24px; /* Button size */
+            cursor: pointer;
+            color: #007bff; /* Button color */
+        }
+
+        .nav-button:disabled {
+            color: #cccccc; /* Disabled button color */
+            cursor: not-allowed; /* Cursor style when disabled */
+        }
+
+        .index-display {
+            font-size: 14px; /* Index display size */
+            color: #777; /* Index display color */
+            margin-left: 5px; /* Minimal spacing between buttons and index */
+        }
+    </style>
+    <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+</head>
+<body>
+    <div class="chat-container"><div class="message">
+    <div class="user-message question-1">linkedin alternatives for the following countries, like how India as instahyre.
+1. singapore
+2. dubai
+3. germany
+4. poland
+5. spain
+6. denmark
+7. belgium
+8. switzerland
+9. netherlands
+10. ireland</div>
+    
+    <div class="bot-message bot-response-1">Loading...</div>
+</div></div>
+    <script>
+        // Sample questions and responses
+        const chatData = {
+  "question-1": [
+    "Here are LinkedIn alternatives or job platforms commonly used in the listed countries, similar to Instahyre in India, which focuses on specific professional and hiring needs:  \n---\n### **1. Singapore**  \n- **JobStreet**: Popular for professionals in Southeast Asia, including Singapore.  \n- **FastJobs**: Focuses on non-executive and part-time roles.  \n- **Wantedly**: A networking and job platform for startups and professionals.  \n- **Glints**: Specializes in early-career talent and internship opportunities.\n### **2. Dubai (UAE)**  \n- **Bayt**: The leading platform for Middle East jobs.  \n- **Naukrigulf**: Caters to Gulf job seekers and recruiters.  \n- **Gulftalent**: Popular for mid-to-senior-level positions.  \n- **Skillbee**: Focuses on blue-collar jobs in Dubai.\n### **3. Germany**  \n- **Xing**: The German equivalent of LinkedIn with a focus on professional networking.  \n- **StepStone**: A major platform for job seekers across industries.  \n- **Jobware**: Targets highly skilled professionals.  \n- **Absolventa**: Tailored for young professionals and students.\n### **4. Poland**  \n- **GoldenLine**: A Polish alternative to LinkedIn for networking and jobs.  \n- **Pracuj.pl**: Leading job board in Poland.  \n- **No Fluff Jobs**: Focuses on transparent IT job offers.  \n- **RocketJobs.pl**: Geared towards modern industries like marketing and sales.\n### **5. Spain**  \n- **InfoJobs**: Spain\u2019s largest job platform.  \n- **Jobandtalent**: Combines job searches with career advice.  \n- **Tecnoempleo**: Specialized in IT jobs in Spain.  \n- **Talent Clue**: Helps employers find the right talent efficiently.\n### **6. Denmark**  \n- **Jobindex**: Denmark\u2019s largest job search platform.  \n- **WorkinDenmark**: Government-run platform for international job seekers.  \n- **Ofir**: A general job portal for Danish companies.  \n- **Graduateland**: Targets university graduates and students.\n### **7. Belgium**  \n- **StepStone Belgium**: Major job portal for Belgian professionals.  \n- **VDAB**: A government job platform for Dutch-speaking regions.  \n- **Le Forem**: The French-speaking counterpart of VDAB.  \n- **Jobat**: Offers jobs and career advice in Belgium.\n### **8. Switzerland**  \n- **JobCloud (Jobs.ch & Jobup.ch)**: Switzerland\u2019s largest job boards.  \n- **WeJob**: Swiss job network focusing on specific industries.  \n- **Talentory**: A recruitment marketplace for senior professionals.  \n- **SwissDevJobs**: Focused on IT roles in Switzerland.\n### **9. Netherlands**  \n- **Indeed Netherlands**: Popular for job searches across all sectors.  \n- **Werk.nl**: Government-backed job portal.  \n- **Nationale Vacaturebank**: Large local job board.  \n- **TechLeap.nl**: Focused on startups and tech opportunities.\n### **10. Ireland**  \n- **Jobs.ie**: Leading Irish job platform.  \n- **IrishJobs.ie**: Caters to various industries across Ireland.  \n- **GradIreland**: Specializes in graduate and internship opportunities.  \n- **RecruitIreland**: General job board with diverse listings.\nEach platform caters to regional and industry-specific needs, so exploring the right one for your target field and region is key!"
+  ]
+};
+
+        // Object to store current response indices for each question
+        const currentResponseIndices = {};
+
+        const converter = new showdown.Converter(); // Create a new Showdown converter
+
+      // Function to load responses based on the question ID
+      function loadResponses(questionId) {
+        const responses = chatData[questionId];
+        
+        if (responses.length > 1) {
+            const botResponseElement = document.querySelector(`.${questionId.replace('question-', 'bot-response-')}`);
+            const indexDisplay = document.getElementById(`index-display-${questionId.replace('question-', '')}`);
+
+            // Load initial response
+            // botResponseElement.textContent = responses[0];
+            botResponseElement.innerHTML = converter.makeHtml(responses[0]);
+            indexDisplay.textContent = `1/${responses.length}`;
+
+            // Initialize the current response index for this question if it doesn't exist
+            if (!(questionId in currentResponseIndices)) {
+                currentResponseIndices[questionId] = 0;
+            }
+
+            // Load initial response
+            const currentResponseIndex = currentResponseIndices[questionId];
+
+            // Update navigation buttons
+            const prevButton = document.querySelector(`.prev-button[data-question-id="${questionId}"]`);
+            const nextButton = document.querySelector(`.next-button[data-question-id="${questionId}"]`);
+
+            function updateResponse() {
+                // botResponseElement.textContent = responses[currentResponseIndices[questionId]];
+                botResponseElement.innerHTML = converter.makeHtml(responses[currentResponseIndices[questionId]]);
+                indexDisplay.textContent = `${currentResponseIndices[questionId] + 1}/${responses.length}`;
+                prevButton.disabled = currentResponseIndices[questionId] === 0; // Disable if at first response
+                nextButton.disabled = currentResponseIndices[questionId] === responses.length - 1; // Disable if at last response
+            }
+
+            // Event listeners for navigation buttons
+            prevButton.addEventListener("click", (event) => {
+                questionId = event.target.getAttribute('data-question-id');
+                console.log("previous button clicked for button" +  " " + questionId);
+                if (currentResponseIndices[questionId] > 0) {
+                    currentResponseIndices[questionId]--;
+                    updateResponse()
+                }
+                console.log(currentResponseIndices);
+            });
+
+            nextButton.addEventListener("click", (event) => {
+                questionId = event.target.getAttribute('data-question-id');        
+                console.log("next button clicked for button" +  " " + questionId);
+                
+                if (currentResponseIndices[questionId] < responses.length - 1) {
+                    currentResponseIndices[questionId]++;
+                    updateResponse();
+                }
+                console.log(currentResponseIndices);
+            });
+        } else {
+            const botResponseElement = document.querySelector(`.${questionId.replace('question-', 'bot-response-')}`);
+
+            // Load initial response
+            botResponseElement.innerHTML = converter.makeHtml(responses[0]);
+        }
+
+        
+      }
+
+      // Load responses for all questions dynamically
+      Object.keys(chatData).forEach(questionKey => {
+        loadResponses(questionKey);
+      });
+    
+    </script>
+</body>
+</html>

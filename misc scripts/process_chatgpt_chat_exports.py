@@ -3,8 +3,10 @@
 # give the user a command line interactive session to choose which chat session to download
 # download the chat session as a cleaned up: 1. chat.html, 2. chat.json, 3. chat.pdf
 
-import argparse, json
+import sys, json
 from typing import Dict
+from jsonschema import validate, ValidationError
+
 
 class Node:
     def __init__(self, id, message, parent, children):
@@ -152,7 +154,12 @@ def process_raw_chats_json(json_file_path: str):
 
 
 def main():
-    process_raw_chats_json(json_file_path='./conversations.json')
+    # process_raw_chats_json(json_file_path='./conversations.json')
+    if len(sys.argv) == 2:
+        process_raw_chats_json(json_file_path=sys.argv[1])
+    else:
+        # process_raw_chats_json(json_file_path='./conversations.json')
+        print("Usage: python process_chatgpt_chat_exports.py <proper_conversations.json>")
 
 if __name__ == '__main__':
     main()

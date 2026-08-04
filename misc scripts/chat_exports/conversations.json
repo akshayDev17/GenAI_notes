@@ -1,0 +1,179 @@
+[
+    {
+        "title": "LinkedIn Alternatives Worldwide",
+        "create_time": 1735992801.980914,
+        "update_time": 1735992824.777617,
+        "mapping": {
+            "aaa1ab35-cdfb-4ec2-849c-256bc7585cda": {
+                "id": "aaa1ab35-cdfb-4ec2-849c-256bc7585cda",
+                "message": null,
+                "parent": null,
+                "children": [
+                    "059aa492-f13f-41a7-817d-dffc7ddbfb9a"
+                ]
+            },
+            "059aa492-f13f-41a7-817d-dffc7ddbfb9a": {
+                "id": "059aa492-f13f-41a7-817d-dffc7ddbfb9a",
+                "message": {
+                    "id": "059aa492-f13f-41a7-817d-dffc7ddbfb9a",
+                    "author": {
+                        "role": "system",
+                        "name": null,
+                        "metadata": {}
+                    },
+                    "create_time": null,
+                    "update_time": null,
+                    "content": {
+                        "content_type": "text",
+                        "parts": [
+                            ""
+                        ]
+                    },
+                    "status": "finished_successfully",
+                    "end_turn": true,
+                    "weight": 0.0,
+                    "metadata": {
+                        "is_visually_hidden_from_conversation": true
+                    },
+                    "recipient": "all",
+                    "channel": null
+                },
+                "parent": "aaa1ab35-cdfb-4ec2-849c-256bc7585cda",
+                "children": [
+                    "aaa275e6-dac4-4a66-a1a5-130893bfe792"
+                ]
+            },
+            "aaa275e6-dac4-4a66-a1a5-130893bfe792": {
+                "id": "aaa275e6-dac4-4a66-a1a5-130893bfe792",
+                "message": {
+                    "id": "aaa275e6-dac4-4a66-a1a5-130893bfe792",
+                    "author": {
+                        "role": "user",
+                        "name": null,
+                        "metadata": {}
+                    },
+                    "create_time": 1735992801.985232,
+                    "update_time": null,
+                    "content": {
+                        "content_type": "text",
+                        "parts": [
+                            "linkedin alternatives for the following countries, like how India as instahyre.\n1. singapore\n2. dubai\n3. germany\n4. poland\n5. spain\n6. denmark\n7. belgium\n8. switzerland\n9. netherlands\n10. ireland"
+                        ]
+                    },
+                    "status": "finished_successfully",
+                    "end_turn": null,
+                    "weight": 1.0,
+                    "metadata": {
+                        "serialization_metadata": {
+                            "custom_symbol_offsets": []
+                        },
+                        "request_id": "8fcb245e18b67e8a-MAA",
+                        "message_source": null,
+                        "timestamp_": "absolute",
+                        "message_type": null
+                    },
+                    "recipient": "all",
+                    "channel": null
+                },
+                "parent": "059aa492-f13f-41a7-817d-dffc7ddbfb9a",
+                "children": [
+                    "d3079cce-bc6d-4ee3-8573-05d8a3783393"
+                ]
+            },
+            "d3079cce-bc6d-4ee3-8573-05d8a3783393": {
+                "id": "d3079cce-bc6d-4ee3-8573-05d8a3783393",
+                "message": {
+                    "id": "d3079cce-bc6d-4ee3-8573-05d8a3783393",
+                    "author": {
+                        "role": "assistant",
+                        "name": null,
+                        "metadata": {}
+                    },
+                    "create_time": 1735992823.743369,
+                    "update_time": null,
+                    "content": {
+                        "content_type": "text",
+                        "parts": [
+                            ""
+                        ]
+                    },
+                    "status": "finished_successfully",
+                    "end_turn": null,
+                    "weight": 1.0,
+                    "metadata": {
+                        "message_type": null,
+                        "model_slug": "gpt-4o",
+                        "default_model_slug": "auto",
+                        "parent_id": "aaa275e6-dac4-4a66-a1a5-130893bfe792",
+                        "request_id": "8fcb245e18b67e8a-MAA",
+                        "timestamp_": "absolute"
+                    },
+                    "recipient": "all",
+                    "channel": null
+                },
+                "parent": "aaa275e6-dac4-4a66-a1a5-130893bfe792",
+                "children": [
+                    "c1cb9d04-69b7-40c7-a57b-93a463d63feb"
+                ]
+            },
+            "c1cb9d04-69b7-40c7-a57b-93a463d63feb": {
+                "id": "c1cb9d04-69b7-40c7-a57b-93a463d63feb",
+                "message": {
+                    "id": "c1cb9d04-69b7-40c7-a57b-93a463d63feb",
+                    "author": {
+                        "role": "assistant",
+                        "name": null,
+                        "metadata": {}
+                    },
+                    "create_time": 1735992823.7435,
+                    "update_time": null,
+                    "content": {
+                        "content_type": "text",
+                        "parts": [
+                            "Here are LinkedIn alternatives or job platforms commonly used in the listed countries, similar to Instahyre in India, which focuses on specific professional and hiring needs:  \n\n---\n\n### **1. Singapore**  \n- **JobStreet**: Popular for professionals in Southeast Asia, including Singapore.  \n- **FastJobs**: Focuses on non-executive and part-time roles.  \n- **Wantedly**: A networking and job platform for startups and professionals.  \n- **Glints**: Specializes in early-career talent and internship opportunities.\n\n### **2. Dubai (UAE)**  \n- **Bayt**: The leading platform for Middle East jobs.  \n- **Naukrigulf**: Caters to Gulf job seekers and recruiters.  \n- **Gulftalent**: Popular for mid-to-senior-level positions.  \n- **Skillbee**: Focuses on blue-collar jobs in Dubai.\n\n### **3. Germany**  \n- **Xing**: The German equivalent of LinkedIn with a focus on professional networking.  \n- **StepStone**: A major platform for job seekers across industries.  \n- **Jobware**: Targets highly skilled professionals.  \n- **Absolventa**: Tailored for young professionals and students.\n\n### **4. Poland**  \n- **GoldenLine**: A Polish alternative to LinkedIn for networking and jobs.  \n- **Pracuj.pl**: Leading job board in Poland.  \n- **No Fluff Jobs**: Focuses on transparent IT job offers.  \n- **RocketJobs.pl**: Geared towards modern industries like marketing and sales.\n\n### **5. Spain**  \n- **InfoJobs**: Spain\u2019s largest job platform.  \n- **Jobandtalent**: Combines job searches with career advice.  \n- **Tecnoempleo**: Specialized in IT jobs in Spain.  \n- **Talent Clue**: Helps employers find the right talent efficiently.\n\n### **6. Denmark**  \n- **Jobindex**: Denmark\u2019s largest job search platform.  \n- **WorkinDenmark**: Government-run platform for international job seekers.  \n- **Ofir**: A general job portal for Danish companies.  \n- **Graduateland**: Targets university graduates and students.\n\n### **7. Belgium**  \n- **StepStone Belgium**: Major job portal for Belgian professionals.  \n- **VDAB**: A government job platform for Dutch-speaking regions.  \n- **Le Forem**: The French-speaking counterpart of VDAB.  \n- **Jobat**: Offers jobs and career advice in Belgium.\n\n### **8. Switzerland**  \n- **JobCloud (Jobs.ch & Jobup.ch)**: Switzerland\u2019s largest job boards.  \n- **WeJob**: Swiss job network focusing on specific industries.  \n- **Talentory**: A recruitment marketplace for senior professionals.  \n- **SwissDevJobs**: Focused on IT roles in Switzerland.\n\n### **9. Netherlands**  \n- **Indeed Netherlands**: Popular for job searches across all sectors.  \n- **Werk.nl**: Government-backed job portal.  \n- **Nationale Vacaturebank**: Large local job board.  \n- **TechLeap.nl**: Focused on startups and tech opportunities.\n\n### **10. Ireland**  \n- **Jobs.ie**: Leading Irish job platform.  \n- **IrishJobs.ie**: Caters to various industries across Ireland.  \n- **GradIreland**: Specializes in graduate and internship opportunities.  \n- **RecruitIreland**: General job board with diverse listings.\n\nEach platform caters to regional and industry-specific needs, so exploring the right one for your target field and region is key!"
+                        ]
+                    },
+                    "status": "finished_successfully",
+                    "end_turn": true,
+                    "weight": 1.0,
+                    "metadata": {
+                        "finish_details": {
+                            "type": "stop"
+                        },
+                        "is_complete": true,
+                        "citations": [],
+                        "content_references": [],
+                        "message_type": null,
+                        "model_slug": "gpt-4o",
+                        "default_model_slug": "auto",
+                        "parent_id": "d3079cce-bc6d-4ee3-8573-05d8a3783393",
+                        "request_id": "8fcb245e18b67e8a-MAA",
+                        "timestamp_": "absolute"
+                    },
+                    "recipient": "all",
+                    "channel": null
+                },
+                "parent": "d3079cce-bc6d-4ee3-8573-05d8a3783393",
+                "children": []
+            }
+        },
+        "moderation_results": [],
+        "current_node": "c1cb9d04-69b7-40c7-a57b-93a463d63feb",
+        "plugin_ids": null,
+        "conversation_id": "677925e1-5f24-8001-9130-96495956ee1a",
+        "conversation_template_id": null,
+        "gizmo_id": null,
+        "gizmo_type": null,
+        "is_archived": false,
+        "is_starred": null,
+        "safe_urls": [
+            "Jobs.ch"
+        ],
+        "default_model_slug": "auto",
+        "conversation_origin": null,
+        "voice": null,
+        "async_status": null,
+        "disabled_tool_ids": [],
+        "id": "677925e1-5f24-8001-9130-96495956ee1a"
+    }
+]

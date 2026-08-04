@@ -10,7 +10,7 @@
     - the tokens selected as output-tokens using their generated probabilities are selected using the [`sample_top_p`](https://github.com/meta-llama/llama3/blob/main/llama/generation.py#L343) function
     - this uses `torch.multinomial` whose outputs are truly stochastic, regardless of usage of the same temperature value(provided its > 1).
         > Top-p sampling selects the smallest set of tokens whose cumulative probability mass exceeds the threshold p. The distribution is renormalized based on the selected tokens. \
-        For `temperature = 1`, `probs = [0 .1 .2 .3 .4]`, `p(threshold) = 0.25` --> `probs_sort = [.4 .3 .2 .1 0]`, `probs_sum = [.4 .7 .9 1 1]`, [0 .4 .7 .9 1], `mask = [F T T T T]`, `probs_sort = [.4 0 0 0 0]`, `next_token = [4]`(ultimately)
+        For `temperature = 1`, `probs = [0 .1 .2 .3 .4]`, `p(threshold) = 0.25` --> `probs_sort = [.4 .3 .2 .1 0]`, `probs_sum = [.4 .7 .9 1 1]`, `probs_sum - probs_sort = [0 .4 .7 .9 1]`, `mask = [F T T T T]`, `probs_sort = [.4 0 0 0 0]`, `next_token = [4]`(ultimately)
     - on using `temperature = 2`
         ```python
         probs, p = [0 .05 .1 .15 .2], 0.25
@@ -23,3 +23,8 @@
         next_token = torch.multinomial(probs_sort, num_samples = 1) # [1] (or could be [0])
         next_token = torch.gather(probs_idx, -1, next_token) # if prev. step was [0], output = [4], for [1] its [3]
         ```
+
+# Prompts
+1. [muhsinbashir/text-to-streamlit-webapp](https://smith.langchain.com/hub/muhsinbashir/text-to-streamlit-webapp)
+2. [muhsinbashir/job-interview](https://smith.langchain.com/hub/muhsinbashir/job-interview)
+3. [wfh/proposal-indexing](https://smith.langchain.com/hub/wfh/proposal-indexing)

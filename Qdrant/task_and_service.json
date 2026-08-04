@@ -1,0 +1,312 @@
+[
+  {
+    "service": "Order Management Service",
+    "description": "Manages order lifecycle from creation to delivery completion",
+    "tasks": [
+      {
+        "name": "Create Order",
+        "description": "Initiate new orders with items/pricing",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Update Status",
+        "description": "Transition order states (preparing/out-for-delivery)",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Cancel Order",
+        "description": "Handle cancellations with refund workflows",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Stale Order Cleanup",
+        "description": "Force-expire unprocessed orders after timeout",
+        "type": "Debugging"
+      },
+      {
+        "name": "Validate Payloads",
+        "description": "Check incoming order requests for data integrity",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Payment Orchestration Service",
+    "description": "Handles payment processing, refunds, and fraud checks",
+    "tasks": [
+      {
+        "name": "Authorize Payment",
+        "description": "Verify customer funds pre-checkout",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Execute Refund",
+        "description": "Process partial/full refunds to payment methods",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Reconcile Transactions",
+        "description": "Match payments with bank records nightly",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Test Card Processing",
+        "description": "Simulate successful/failed payments",
+        "type": "Debugging"
+      },
+      {
+        "name": "Audit Failed Charges",
+        "description": "Identify declined transactions patterns",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Restaurant Catalog Service",
+    "description": "Maintains real-time menus, hours, and availability",
+    "tasks": [
+      {
+        "name": "Update Menu",
+        "description": "Sync restaurant item changes to live DB",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Toggle Availability",
+        "description": "Disable orders during closures",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Geofence Search",
+        "description": "Filter restaurants by user location",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Force Cache Refresh",
+        "description": "Bypass CDN for stale menu data",
+        "type": "Debugging"
+      },
+      {
+        "name": "Validate Menu Schema",
+        "description": "Check for pricing/naming inconsistencies",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Driver Dispatch Service",
+    "description": "Optimizes driver assignments and route planning",
+    "tasks": [
+      {
+        "name": "Assign Driver",
+        "description": "Match orders to nearest available drivers",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Reroute Dynamically",
+        "description": "Adjust paths for traffic/accidents",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Calculate ETAs",
+        "description": "Predict pickup/delivery times",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Simulate No-show",
+        "description": "Test reassignment workflows",
+        "type": "Debugging"
+      },
+      {
+        "name": "Audit Assignment Logs",
+        "description": "Review matching decision history",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "User Profile Service",
+    "description": "Manages customer/driver accounts and preferences",
+    "tasks": [
+      {
+        "name": "Update Preferences",
+        "description": "Store dietary/address settings",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Deactivate Account",
+        "description": "GDPR-compliant data removal",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Track Loyalty Points",
+        "description": "Calculate/redeem rewards",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Export Data Snapshots",
+        "description": "Generate user data backups",
+        "type": "Debugging"
+      },
+      {
+        "name": "Anomaly Detection",
+        "description": "Flag suspicious login patterns",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Location Tracking Service",
+    "description": "Provides real-time order/driver GPS updates",
+    "tasks": [
+      {
+        "name": "Stream Positions",
+        "description": "Emit driver coordinates every 15s",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Proximity Alerts",
+        "description": "Notify customers when drivers near",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Handle GPS Dropouts",
+        "description": "Recover missed location pings",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Replay Routes",
+        "description": "Visualize historical delivery paths",
+        "type": "Debugging"
+      },
+      {
+        "name": "Inject Test Coordinates",
+        "description": "Simulate movement in dev env",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Notification Service",
+    "description": "Delivers alerts via push/SMS/email",
+    "tasks": [
+      {
+        "name": "Send Status Update",
+        "description": "Trigger order milestone notifications",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Promotion Broadcast",
+        "description": "Dispatch marketing campaigns",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Manage Opt-outs",
+        "description": "Respect user notification preferences",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Test Rendering",
+        "description": "Verify templates across devices",
+        "type": "Debugging"
+      },
+      {
+        "name": "Audit Failure Rates",
+        "description": "Track undelivered alerts",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Ratings & Reviews Service",
+    "description": "Collects and processes feedback",
+    "tasks": [
+      {
+        "name": "Submit Review",
+        "description": "Persist ratings with sentiment analysis",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Calculate Averages",
+        "description": "Update restaurant/driver scores",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Flag Content",
+        "description": "Detect profanity/fake reviews",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Anomaly Detection",
+        "description": "Identify review bombing patterns",
+        "type": "Debugging"
+      },
+      {
+        "name": "Generate Test Feedback",
+        "description": "Seed synthetic ratings",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Fraud Detection Service",
+    "description": "Identifies and blocks suspicious activity",
+    "tasks": [
+      {
+        "name": "Analyze Patterns",
+        "description": "Detect unusual order volumes/payments",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Block Accounts",
+        "description": "Freeze compromised credentials",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Device Fingerprinting",
+        "description": "Track suspect devices",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Generate Fraud Signals",
+        "description": "Create test attack scenarios",
+        "type": "Debugging"
+      },
+      {
+        "name": "Model Validation",
+        "description": "Monitor ML classifier drift",
+        "type": "Debugging"
+      }
+    ]
+  },
+  {
+    "service": "Analytics Service",
+    "description": "Generates business insights and reports",
+    "tasks": [
+      {
+        "name": "Track KPIs",
+        "description": "Calculate delivery success rates",
+        "type": "Core-functional"
+      },
+      {
+        "name": "Predict Demand",
+        "description": "Forecast order hotspots by area",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Restaurant Reports",
+        "description": "Generate sales performance dashboards",
+        "type": "Scenario-based"
+      },
+      {
+        "name": "Rebuild Aggregates",
+        "description": "Reprocess historical data",
+        "type": "Debugging"
+      },
+      {
+        "name": "Validate Data Syncs",
+        "description": "Check real-time vs batch consistency",
+        "type": "Debugging"
+      }
+    ]
+  }
+]
