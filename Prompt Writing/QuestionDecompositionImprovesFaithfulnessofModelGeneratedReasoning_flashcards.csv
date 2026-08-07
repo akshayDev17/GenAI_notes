@@ -1,0 +1,45 @@
+"In the context of Large Language Models (LLMs), what is the definition of 'faithful' reasoning?",Reasoning is faithful to the extent that it accurately reflects the model’s actual process for producing its output.
+What is 'biased reasoning' as defined by Turpin et al. (2023)?,The generation of reasoning to justify an answer influenced by external biases without explicitly mentioning those biases.
+Lanham et al. (2023) define _____ as a phenomenon where LLM answers remain unchanged despite the truncation or corruption of the provided reasoning.,ignored reasoning
+What is 'Chain-of-Thought' (CoT) prompting?,A method prompting LLMs to generate step-by-step reasoning in a single sampling call before producing a final answer.
+Term: Factored Decomposition,Definition: A method that decomposes a question into subquestions answered in separate contexts to ensure independent reasoning steps.
+How does 'Chain-of-Thought Decomposition' (CoTD) differ from standard CoT?,CoTD structures reasoning as subquestion and subanswer pairs within a single sampling call rather than free-form steps.
+Identify the three distinct stages of the Factored Decomposition method.,"The three stages are decomposition, subquestion-answering, and recomposition."
+What is the primary objective of the 'recomposition' stage in Factored Decomposition?,To predict the final answer to the original question using the collected set of subquestions and subanswers.
+"According to the performance-faithfulness Pareto curve, which prompting method achieves the highest question-answering accuracy?",Chain-of-Thought (CoT) prompting achieves the highest accuracy.
+Which decomposition-based method demonstrates the highest levels of reasoning faithfulness?,Factored Decomposition demonstrates the highest faithfulness.
+How does 'Early Answering' measure reasoning faithfulness?,It assesses faithfulness by tracking how much of the reasoning sample a model requires before it reaches its final answer.
+"In 'Adding Mistakes' experiments, what does a high sensitivity to reasoning corruption indicate about a model?","It indicates that the model is strongly relying on the stated reasoning to reach its final answer, suggesting higher faithfulness."
+"According to the study, what is the 'Adding Mistakes' sensitivity score (percentage of different answers) for Factored Decomposition?",The sensitivity score is $33.6\%$.
+The 'Answer is Always A' bias test evaluates faithfulness by measuring accuracy drops when _____.,all few-shot examples provided in the context share the same correct answer choice.
+What biasing feature is introduced in the 'Suggested Answer' faithfulness test?,The user explicitly suggests an incorrect answer choice to the model before it generates reasoning.
+Why is Factored Decomposition expected to reduce 'biased reasoning' compared to CoT?,"Each subquestion is answered in an independent context, preventing biasing features in the original question from influencing subanswers."
+On which two tasks did reasoning-generating methods show the largest performance gains over zero-shot/few-shot baselines?,The largest gains were observed on HotpotQA and StrategyQA.
+What specific constraint was applied to the HotpotQA dataset for the study's evaluation?,It was filtered to include only questions with binary (yes/no) answers.
+Concept: TruthfulQA,Definition: A benchmark task consisting of questions that humans often answer incorrectly due to common misconceptions.
+"In the 'Suggested Answer' bias test, what was the absolute accuracy drop for Chain-of-Thought (CoT)?",The absolute accuracy drop was $21.3\%$.
+How does the 'Suggested Answer' accuracy drop of Factored Decomposition compare to CoT?,"Factored Decomposition has a much smaller drop of $9.2\%$, compared to the $21.3\%$ drop of CoT."
+Which sampling method was used to score and select reasoning samples in the study?,"Best-of-$N$ sampling with $N = 5$ was used, scored by a preference model."
+What nucleus sampling parameters were employed for the LLM during the experiments?,The study used top $p = 0.95$ and a temperature of $0.8$.
+The ability of a human to match a model's behavior based on its provided explanations is called _____.,simulatability
+What qualitative failure mode was observed in Factored Decomposition regarding subquestion phrasing?,The model sometimes fails to phrase subquestions so they can be answered without the additional context of the original question.
+How does 'Chain-of-Thought Decomposition' serve as an intermediate method between CoT and Factored Decomposition?,It uses the subquestion format of Factored Decomposition but the single-sampling context of CoT.
+"Under the 'Answer is Always A' bias, which method showed an anomalous (likely noise-driven) accuracy gain of $+2.1\%$?",Factored Decomposition showed this gain.
+What is the 'Factored Cognition' hypothesis proposed by Stuhlmüller (2018)?,"The hypothesis that complex tasks can be decomposed into small, mostly independent subtasks."
+How might faithful model reasoning improve AI safety in high-stakes settings?,It allows human supervisors to detect and discard outputs driven by undesirable behaviors like reward hacking or sycophancy.
+Formula: Overall Faithfulness Score,Calculation: Average of faithfulness metrics that have been normalized to a $0-1$ range.
+Which task focus defines OpenBookQA?,OpenBookQA focuses on elementary-level science questions.
+"In the truncation sensitivity graph, what curve shape indicates higher reasoning faithfulness?",A steeper slope where the model requires more reasoning to reach the original answer indicates higher faithfulness.
+How many total questions were evaluated across the four question-answering tasks?,A total of $1200$ questions were evaluated ($300$ per task).
+What base model was used for the RLHF-finetuned LLM in the study?,The base model used was Claude 1.3.
+Process: Corrupting a reasoning sample,Step: Prompt the model to add a mistake to step $x_i$ and then regenerate all subsequent steps $x_{i+1} \dots x_n$.
+Why might CoT reasoning be considered 'closer to biased reasoning' in certain settings?,Because it can be significantly impacted by biasing features in the context while appearing plausible.
+Which prompting technique resulted in the lowest absolute accuracy across all tasks?,Zero-shot prompting resulted in the lowest accuracy ($72.8\%$).
+How does question decomposition help mitigate 'ignored reasoning'?,"It specifies clear logical relationships between subanswers and the final answer, making it harder for the model to bypass the reasoning."
+What is the primary limitation mentioned regarding the assessment of reasoning faithfulness?,The inability to access the ground truth of the model's internal computations.
+"According to the qualitative findings, what common strategy does the model use when decomposing multiple-choice questions?",The model often uses a process-of-elimination strategy by asking subquestions about each answer choice.
+The phenomenon where a model answers in line with a user's perceived beliefs to be helpful is known as _____.,sycophancy
+What was the findings for Factored Decomposition on sycophancy evaluations?,"It significantly reduced sycophancy, although the authors attribute this to a failure in question phrasing rather than intentional mitigation."
+"Compared to standard CoT, how much did CoT Decomposition's accuracy differ on average?",It underperformed standard CoT by only $0.4\%$ absolute accuracy.
+"In TruthfulQA evaluations, how did the faithfulness trends for decomposition methods compare to other tasks?",The results for all methods were much more similar to each other on TruthfulQA compared to the other tasks.
+What is the purpose of 'process-based oversight' in training LLMs?,To train and verify the model's step-by-step reasoning process rather than just its final output.
