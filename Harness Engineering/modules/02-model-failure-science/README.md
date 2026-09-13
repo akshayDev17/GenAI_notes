@@ -92,6 +92,14 @@ Nine classes, each with its mechanism, its signature, and its severity. This is 
 - **Signature:** the user is furious, and the agent is technically correct.
 - **Severity:** high in autonomous settings; it's the argument for human handoff points (M10, M13) and governance (M15).
 
+### Contested boundaries
+
+Where the adjacent classes above are easy to confuse:
+
+- **6 vs 4 — reasoning degradation under load vs instruction drift.** [For](06-reasoning-load-vs-04-instruction-drift-for.md) · [Against](06-reasoning-load-vs-04-instruction-drift-against.md)
+- **4 vs 5 — instruction drift vs position/ordering bias.** [For](04-instruction-drift-vs-05-position-bias-for.md) · [Against](04-instruction-drift-vs-05-position-bias-against.md)
+- **6 — what "shorten the chain" actually means.** [Worked example](06-class-6-chain-depth-worked-example.md)
+
 ---
 
 ## Attribution: "the model failed" is usually "the harness set it up to fail"
