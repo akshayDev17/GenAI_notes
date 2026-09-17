@@ -1,0 +1,79 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "f1",
+   "order": 2
+  },
+  {
+   "id": "c6",
+   "order": 2
+  },
+  {
+   "id": "t_c6",
+   "order": 2
+  },
+  {
+   "id": "c6h",
+   "order": 2
+  },
+  {
+   "id": "c4a",
+   "order": 2
+  },
+  {
+   "id": "t_c4a",
+   "order": 2
+  },
+  {
+   "id": "c4ah",
+   "order": 2
+  },
+  {
+   "id": "b1",
+   "order": 2
+  },
+  {
+   "id": "f2",
+   "order": 2
+  },
+  {
+   "id": "c4b",
+   "order": 2
+  },
+  {
+   "id": "t_c4b",
+   "order": 2
+  },
+  {
+   "id": "c4bh",
+   "order": 2
+  },
+  {
+   "id": "c5",
+   "order": 2
+  },
+  {
+   "id": "t_c5",
+   "order": 2
+  },
+  {
+   "id": "c5h",
+   "order": 2
+  },
+  {
+   "id": "b2",
+   "order": 2
+  },
+  {
+   "id": "takeaway",
+   "order": 2
+  }
+ ]
+}

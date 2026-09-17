@@ -1,0 +1,96 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "subtitle",
+   "order": 2
+  },
+  {
+   "id": "msg",
+   "order": 2
+  },
+  {
+   "id": "t_msg",
+   "order": 2
+  },
+  {
+   "id": "policy",
+   "order": 2
+  },
+  {
+   "id": "t_policy",
+   "order": 2
+  },
+  {
+   "id": "gap",
+   "order": 2
+  },
+  {
+   "id": "t_gap",
+   "order": 2
+  },
+  {
+   "id": "a_msg",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "a_policy",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "approve",
+   "order": 2
+  },
+  {
+   "id": "t_approve",
+   "order": 2
+  },
+  {
+   "id": "a1",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "diag",
+   "order": 2
+  },
+  {
+   "id": "t_diag",
+   "order": 2
+  },
+  {
+   "id": "a2",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "wrong",
+   "order": 2
+  },
+  {
+   "id": "real",
+   "order": 2
+  },
+  {
+   "id": "t_real",
+   "order": 2
+  },
+  {
+   "id": "a3",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "takeaway",
+   "order": 2
+  }
+ ]
+}

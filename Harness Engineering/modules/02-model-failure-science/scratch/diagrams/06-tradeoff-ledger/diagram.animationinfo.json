@@ -1,0 +1,71 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "trust",
+   "order": 2
+  },
+  {
+   "id": "t_trust",
+   "order": 2
+  },
+  {
+   "id": "verify",
+   "order": 2
+  },
+  {
+   "id": "t_verify",
+   "order": 2
+  },
+  {
+   "id": "t1",
+   "order": 2
+  },
+  {
+   "id": "t1l",
+   "order": 2
+  },
+  {
+   "id": "t1h",
+   "order": 2
+  },
+  {
+   "id": "demo",
+   "order": 2
+  },
+  {
+   "id": "t_demo",
+   "order": 2
+  },
+  {
+   "id": "prod",
+   "order": 2
+  },
+  {
+   "id": "t_prod",
+   "order": 2
+  },
+  {
+   "id": "t2",
+   "order": 2
+  },
+  {
+   "id": "t2h",
+   "order": 2
+  },
+  {
+   "id": "take",
+   "order": 2
+  },
+  {
+   "id": "t_take",
+   "order": 2
+  }
+ ]
+}

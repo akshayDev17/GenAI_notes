@@ -1,0 +1,95 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "subtitle",
+   "order": 2
+  },
+  {
+   "id": "c00",
+   "order": 2
+  },
+  {
+   "id": "t_c00",
+   "order": 2
+  },
+  {
+   "id": "c01",
+   "order": 2
+  },
+  {
+   "id": "t_c01",
+   "order": 2
+  },
+  {
+   "id": "c02",
+   "order": 2
+  },
+  {
+   "id": "t_c02",
+   "order": 2
+  },
+  {
+   "id": "c10",
+   "order": 2
+  },
+  {
+   "id": "t_c10",
+   "order": 2
+  },
+  {
+   "id": "c11",
+   "order": 2
+  },
+  {
+   "id": "t_c11",
+   "order": 2
+  },
+  {
+   "id": "c12",
+   "order": 2
+  },
+  {
+   "id": "t_c12",
+   "order": 2
+  },
+  {
+   "id": "c20",
+   "order": 2
+  },
+  {
+   "id": "t_c20",
+   "order": 2
+  },
+  {
+   "id": "c21",
+   "order": 2
+  },
+  {
+   "id": "t_c21",
+   "order": 2
+  },
+  {
+   "id": "c22",
+   "order": 2
+  },
+  {
+   "id": "t_c22",
+   "order": 2
+  },
+  {
+   "id": "take",
+   "order": 2
+  },
+  {
+   "id": "t_take",
+   "order": 2
+  }
+ ]
+}

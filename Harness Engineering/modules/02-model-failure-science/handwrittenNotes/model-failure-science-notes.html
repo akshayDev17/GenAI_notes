@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model Failure Science — handwritten notes</title>
+<!-- Handwriting fonts. When offline the cursive fallback keeps the look. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #2b2b3c;
+    --accent: #c0392b;
+    --accent-soft: #2c6e9c;
+    --paper: #fbf6ea;
+    --rule: #a9c6e8;
+    --margin: #e8b9b4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e9e2d0;
+    font-family: "Kalam", "Patrick Hand", "Caveat", "Comic Sans MS", cursive;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .page {
+    max-width: 760px;
+    margin: 24px auto;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 30px;
+    background-position: 0 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    padding: 40px 48px 56px 96px;
+    position: relative;
+    min-height: 90vh;
+  }
+  /* red margin line */
+  .page::before {
+    content: "";
+    position: absolute;
+    left: 72px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--margin);
+  }
+  h1.title {
+    font-family: "Caveat", cursive;
+    font-size: 44px;
+    font-weight: 700;
+    margin: 0 0 2px;
+    transform: rotate(-1.2deg);
+    color: var(--ink);
+  }
+  .date {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    transform: rotate(-0.6deg);
+  }
+  .point {
+    font-size: 18px;
+    background: rgba(240, 220, 90, .28);
+    display: inline-block;
+    padding: 2px 10px;
+    transform: rotate(-0.5deg);
+    margin-bottom: 22px;
+  }
+  h2 {
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 26px 0 4px;
+    transform: rotate(-0.8deg);
+    color: var(--ink-soft);
+  }
+  ul { margin: 4px 0 6px; padding-left: 26px; }
+  li { margin: 4px 0; font-size: 18px; }
+  li::marker { color: var(--accent-soft); }
+  .note {
+    position: absolute;
+    left: 8px;
+    width: 52px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+    transform: rotate(-2deg);
+    opacity: .75;
+  }
+  .remember {
+    margin-top: 26px;
+    background: #fff3a6;
+    border: 1px solid #e7cf4f;
+    padding: 12px 16px;
+    transform: rotate(-1deg);
+    font-size: 18px;
+    box-shadow: 2px 2px 0 rgba(0,0,0,.06);
+  }
+  .chart {
+    margin: 18px 0;
+    padding: 8px 0;
+  }
+  .caption {
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+    transform: rotate(-0.4deg);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1 class="title">Model Failure Science</h1>
+  <div class="date">14 September 2026 — M2 · module question: what does the model get wrong, and why</div>
+
+  <div class="point">Models fail structurally, not randomly — ~80% of “model failures” are harness failures.</div>
+
+  <h2>The uncomfortable fact</h2>
+  <span class="note" style="top:150px">why it repeats</span>
+  <ul>
+    <li>LLM predicts next token — not truth.</li>
+    <li>Plausibility ≠ truth; fluency ≠ correctness.</li>
+    <li>Failures repeat because they're structural.</li>
+    <li>Which failures reach users? A harness choice.</li>
+  </ul>
+
+  <h2>Nine failure classes</h2>
+  <span class="note" style="top:292px">the catalog</span>
+  <ul>
+    <li>Nine classes, each with mechanism and signature.</li>
+    <li>Three forces behind them: fluency, salience, literalness.</li>
+  </ul>
+
+  <div class="chart">
+    <svg viewBox="0 0 380 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the nine failure classes as a hand-drawn list">
+      <!-- left column -->
+      <text x="14" y="28" font-family="Kalam, cursive" font-size="15" fill="#c0392b">1.</text>
+      <text x="34" y="28" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Hallucination</text>
+      <path d="M34 34 L132 33 L134 35" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="14" y="76" font-family="Kalam, cursive" font-size="15" fill="#c0392b">2.</text>
+      <text x="34" y="76" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Sycophancy</text>
+      <path d="M34 82 L112 81 L114 83" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="14" y="124" font-family="Kalam, cursive" font-size="15" fill="#c0392b">3.</text>
+      <text x="34" y="124" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Brittleness</text>
+      <path d="M34 130 L118 129 L120 131" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="14" y="172" font-family="Kalam, cursive" font-size="15" fill="#c0392b">4.</text>
+      <text x="34" y="172" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Instruction drift</text>
+      <path d="M34 178 L156 177 L158 179" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="14" y="220" font-family="Kalam, cursive" font-size="15" fill="#c0392b">5.</text>
+      <text x="34" y="220" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Position bias</text>
+      <path d="M34 226 L126 225 L128 227" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- right column -->
+      <text x="200" y="28" font-family="Kalam, cursive" font-size="15" fill="#c0392b">6.</text>
+      <text x="220" y="28" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Reasoning load</text>
+      <path d="M220 34 L318 33 L320 35" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="200" y="76" font-family="Kalam, cursive" font-size="15" fill="#c0392b">7.</text>
+      <text x="220" y="76" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Overlooked constraints</text>
+      <path d="M220 82 L370 81 L372 83" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="200" y="124" font-family="Kalam, cursive" font-size="15" fill="#c0392b">8.</text>
+      <text x="220" y="124" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Tool errors</text>
+      <path d="M220 130 L302 129 L304 131" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <text x="200" y="172" font-family="Kalam, cursive" font-size="15" fill="#c0392b">9.</text>
+      <text x="220" y="172" font-family="Kalam, cursive" font-size="15" fill="#1a1a2e">Goal misspec</text>
+      <path d="M220 178 L310 177 L312 179" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="caption">nine classes (short names) — the full catalog lives in the README</div>
+  </div>
+
+  <h2>Who owns the failure</h2>
+  <span class="note" style="top:632px">80 / 20</span>
+  <ul>
+    <li>Roughly 80% trace to harness layers.</li>
+    <li>About 20% are real capability limits.</li>
+    <li>Even those: design around the weakness.</li>
+  </ul>
+
+  <div class="chart">
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="hand-drawn bar chart of failure attribution">
+      <path d="M20 158 L300 156" stroke="#1a1a2e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M46 158 L44 40 L47 38 L68 40 L70 158" fill="#2b2b3c" fill-opacity="0.85"/>
+      <path d="M130 158 L128 130 L131 128 L152 130 L154 158" fill="#2b2b3c" fill-opacity="0.5"/>
+      <path d="M210 158 L208 96 L211 94 L232 96 L234 158" fill="#2b2b3c" fill-opacity="0.65"/>
+      <text x="38" y="32" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">~80%</text>
+      <text x="122" y="122" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">~20%</text>
+      <text x="204" y="88" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">rising</text>
+      <text x="36" y="176" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">Harness</text>
+      <text x="112" y="176" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">Capability</text>
+      <text x="198" y="176" font-family="Kalam, cursive" font-size="13" fill="#1a1a2e">Environment</text>
+    </svg>
+    <div class="caption">where “model failures” actually come from — most are harness layers</div>
+  </div>
+
+  <h2>Class → layer map</h2>
+  <span class="note" style="top:936px">the map</span>
+  <ul>
+    <li>Every class names its catching layers.</li>
+    <li>Hallucination → grounding (M5), evaluation (M12).</li>
+    <li>Tool errors → tool interfaces (M8, M9).</li>
+    <li>Goal misspec → governance (M15), handoffs (M10).</li>
+  </ul>
+
+  <h2>What it gives the engineer</h2>
+  <span class="note" style="top:1082px">the payoff</span>
+  <ul>
+    <li>Method: fault-tree the failure classes.</li>
+    <li>Language: precise names, not vague alarm.</li>
+    <li>Humility: make irreducible failures cheap.</li>
+  </ul>
+
+  <div class="remember">Remember: “the model was wrong” is never a diagnosis — ask which layer let it through.</div>
+
+</div>
+</body>
+</html>

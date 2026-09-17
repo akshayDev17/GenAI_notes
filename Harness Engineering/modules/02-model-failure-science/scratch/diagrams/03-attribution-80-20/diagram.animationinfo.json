@@ -1,0 +1,55 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "cap",
+   "order": 2
+  },
+  {
+   "id": "t_cap",
+   "order": 2
+  },
+  {
+   "id": "harness",
+   "order": 2
+  },
+  {
+   "id": "t_harness",
+   "order": 2
+  },
+  {
+   "id": "env",
+   "order": 2
+  },
+  {
+   "id": "t_env",
+   "order": 2
+  },
+  {
+   "id": "bar80",
+   "order": 2
+  },
+  {
+   "id": "t_bar80",
+   "order": 2
+  },
+  {
+   "id": "bar20",
+   "order": 2
+  },
+  {
+   "id": "t_bar20",
+   "order": 2
+  },
+  {
+   "id": "takeaway",
+   "order": 2
+  }
+ ]
+}

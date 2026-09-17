@@ -1,0 +1,43 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "g1",
+   "order": 2
+  },
+  {
+   "id": "t_g1",
+   "order": 2
+  },
+  {
+   "id": "g2",
+   "order": 2
+  },
+  {
+   "id": "t_g2",
+   "order": 2
+  },
+  {
+   "id": "g3",
+   "order": 2
+  },
+  {
+   "id": "t_g3",
+   "order": 2
+  },
+  {
+   "id": "take",
+   "order": 2
+  },
+  {
+   "id": "t_take",
+   "order": 2
+  }
+ ]
+}

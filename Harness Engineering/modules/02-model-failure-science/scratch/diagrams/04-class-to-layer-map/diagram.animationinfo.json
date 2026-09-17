@@ -1,0 +1,204 @@
+{
+ "startMs": 400,
+ "defaultDuration": 350,
+ "elements": [
+  {
+   "id": "title",
+   "order": 1,
+   "duration": 300
+  },
+  {
+   "id": "cls0",
+   "order": 2
+  },
+  {
+   "id": "t_cls0",
+   "order": 2
+  },
+  {
+   "id": "lay0",
+   "order": 2
+  },
+  {
+   "id": "t_lay0",
+   "order": 2
+  },
+  {
+   "id": "a0",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls1",
+   "order": 2
+  },
+  {
+   "id": "t_cls1",
+   "order": 2
+  },
+  {
+   "id": "lay1",
+   "order": 2
+  },
+  {
+   "id": "t_lay1",
+   "order": 2
+  },
+  {
+   "id": "a1",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls2",
+   "order": 2
+  },
+  {
+   "id": "t_cls2",
+   "order": 2
+  },
+  {
+   "id": "lay2",
+   "order": 2
+  },
+  {
+   "id": "t_lay2",
+   "order": 2
+  },
+  {
+   "id": "a2",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls3",
+   "order": 2
+  },
+  {
+   "id": "t_cls3",
+   "order": 2
+  },
+  {
+   "id": "lay3",
+   "order": 2
+  },
+  {
+   "id": "t_lay3",
+   "order": 2
+  },
+  {
+   "id": "a3",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls4",
+   "order": 2
+  },
+  {
+   "id": "t_cls4",
+   "order": 2
+  },
+  {
+   "id": "lay4",
+   "order": 2
+  },
+  {
+   "id": "t_lay4",
+   "order": 2
+  },
+  {
+   "id": "a4",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls5",
+   "order": 2
+  },
+  {
+   "id": "t_cls5",
+   "order": 2
+  },
+  {
+   "id": "lay5",
+   "order": 2
+  },
+  {
+   "id": "t_lay5",
+   "order": 2
+  },
+  {
+   "id": "a5",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls6",
+   "order": 2
+  },
+  {
+   "id": "t_cls6",
+   "order": 2
+  },
+  {
+   "id": "lay6",
+   "order": 2
+  },
+  {
+   "id": "t_lay6",
+   "order": 2
+  },
+  {
+   "id": "a6",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls7",
+   "order": 2
+  },
+  {
+   "id": "t_cls7",
+   "order": 2
+  },
+  {
+   "id": "lay7",
+   "order": 2
+  },
+  {
+   "id": "t_lay7",
+   "order": 2
+  },
+  {
+   "id": "a7",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "cls8",
+   "order": 2
+  },
+  {
+   "id": "t_cls8",
+   "order": 2
+  },
+  {
+   "id": "lay8",
+   "order": 2
+  },
+  {
+   "id": "t_lay8",
+   "order": 2
+  },
+  {
+   "id": "a8",
+   "order": 3,
+   "duration": 400
+  },
+  {
+   "id": "takeaway",
+   "order": 2
+  }
+ ]
+}
