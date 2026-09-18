@@ -22,7 +22,7 @@
 
 ---
 
-## Observable discriminators — four probes, each with a verdict rule
+## Observable discriminators — three probes, each with a verdict rule
 
 - **Re-inject the rule mid-session, change nothing else.**
   - Compliance returns → class 4. The rule had lost salience; restoring salience restored behaviour (L58, L119).
@@ -33,7 +33,8 @@
   - **Verdict:** failure disappears under externalization → class 6; the loss was in attention-held derived values. Failure persists under externalization → not class 6 (or not only class 6); look at 4/5/8.
   - *Honesty note:* externalization grows the context (the state document), so "hold context length constant" is not literally satisfiable — read it as "matched task and inputs". The probe is the same operation as the class-6 remedy, so it establishes the diagnosis by applying the fix in a sandbox, not by a neutral counterfactual. (Worked example: `06-class-6-chain-depth-worked-example.md`.)
 - **Hold the chain constant, shorten the context — the mirror probe.**
-  - *Definition first:* "shorten the context" does **not** mean deleting turns from the production trace — that is lossy, and you cannot know which turns were "waste" until after the fact. It means **re-author the task in a fresh, minimal session**: same task state, same tools, same request, with the history that is not part of the task left out.
+  - *Definition first:* Meaning **re-author the task in a fresh, minimal session**: same task state, same tools, same request, with the history that is not part of the task left out.\
+  "shorten the context" does **not** mean deleting turns from the production trace — that is lossy, and you cannot know which turns were "waste" until after the fact. 
   - The compression key is **the task state**, never "the most recent question". Truncating to the recentmost turn drops the turns where the task was actually defined, and then you have changed the task, not compressed it.
   - **Validity condition:** the task must be *re-instantiable independently of its history*. Scenario C meets it — the task is {order X, refund $400, escalate-if-over-$50}, three messages' worth (L263, L295).
   - **Verdict:** shorter session, same task, failure gone → class 4; the loss was dilution. Failure survives re-authoring at short length → class 6.
@@ -49,13 +50,76 @@
     - **Worked across four domains:** `task-state-across-domains.md` — [healthcare](task-state-across-domains.md#healthcare) · [legal](task-state-across-domains.md#legal) · [SRE](task-state-across-domains.md#sre) · [finance](task-state-across-domains.md#finance).
 
     </details>
-- **Ask the agent to state the rule before it acts.**
-  - A drifting agent can usually still recite the standing policy verbatim; the recitation disproves the "it lost the rule" story and confirms the salience story (because the module's class 4 mechanism is competition, not deletion, L58).
-  - A reasoner whose intermediate state has degraded typically cannot reconcile the stated rule with its own prior steps — it will defend the wrong subtotal as consistent with the rule it just recited. That defence is the class 6 tell, because the wrong value is still being reasoned *from* (L70).
 - **Inspect the failure point in the trace.**
   - Class 4 is a **violation at a boundary**: an action taken that a standing rule forbade, and it is the *first* error in the trace — the steps before it are both rule-conformant and value-correct.
   - Class 6 is a **wrong value mid-chain**: the failing step is not the first error; it is correct-looking arithmetic built on an earlier wrong value. The module's own sequence — step six fails, then the failure cascades (L71) — is a definition of a derived error, not an original one.
   - Generalisation: **in class 4 the violating step is the origin of the error; in class 6 the failing step is the descendant of it.**
+  - **Implementation** — a post-run check, automatable as a read-only ADK auditor agent (three parts):
+    - <details>
+      <summary><strong>1 · Capture the trace</strong> — flatten the finished session into ordered steps</summary>
+
+      ```python
+      from google.adk.sessions import Session
+
+      def serialize_trace(session: Session) -> str:
+          lines, step = [], 0
+          for event in session.events:
+              for part in event.content.parts:
+                  if part.text:
+                      step += 1
+                      lines.append(f"[step {step}] {event.author}: {part.text}")
+                  elif part.function_call:
+                      lines.append(f"[step {step}] call {part.function_call.name}({part.function_call.args})")
+                  elif part.function_response:
+                      lines.append(f"[step {step}] <- {str(part.function_response.response)[:200]}")
+          return "\n".join(lines)
+      ```
+      </details>
+    - <details>
+      <summary><strong>2 · The auditor agent</strong> — a read-only LlmAgent that classifies the first error</summary>
+
+      ```python
+      from google.adk.agents import LlmAgent
+
+      trace_auditor = LlmAgent(
+          name="failure_point_auditor",
+          model="gemini-2.5-flash",            # or LiteLLM: "litellm/azure/<deployment>"
+          description="Classifies the first failure in an agent trace.",
+          instruction="""
+      Find the FIRST error in the trace and classify it:
+      - class 4: boundary violation — an action a standing rule forbade, and every step
+        before it is rule-conformant and value-correct.
+      - class 6: the first VISIBLE error is not the origin — it is correct-looking
+        arithmetic built on an earlier wrong intermediate value.
+      Return JSON only: {"class": 4|6, "failing_step": int, "origin_step": int|null, "rationale": str}
+      """,
+      )
+      ```
+      </details>
+    - <details>
+      <summary><strong>3 · Run it</strong> — feed the serialized trace, read the verdict</summary>
+
+      ```python
+      import json
+      from google.adk import Runner
+      from google.adk.sessions import InMemorySessionService
+      from google.genai import types as genai_types
+
+      async def classify_trace(session: Session) -> dict:
+          runner = Runner(app_name="trace_audit", agent=trace_auditor,
+                          session_service=InMemorySessionService())
+          msg = genai_types.Content(role="user",
+                                    parts=[genai_types.Part(text=serialize_trace(session))])
+          last = None
+          async for event in runner.run_async(user_id="u", session_id="s", new_message=msg):
+              last = event
+          return json.loads(last.content.parts[0].text)
+          # -> {"class": 6, "failing_step": 9, "origin_step": 6, "rationale": "..."}
+      ```
+      </details>
+  - **The distinction worth keeping:**
+    - **Thin agentic (this probe):** post-run, read-only, one LLM pass — no tools, no loop, no action. An M12/M13 post-hoc evaluator, safe to run after every incident.
+    - **Full agentic (the class-4 guard):** in-loop, *before* each action — a capability boundary that refuses the violating tool call in real time. That is M8, and it *prevents* the boundary violation where this probe merely *names* it after.
 
 ---
 
