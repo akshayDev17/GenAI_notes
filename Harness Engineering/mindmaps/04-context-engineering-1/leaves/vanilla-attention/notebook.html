@@ -1,0 +1,366 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Vanilla attention — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--vanilla-attention">&larr; course map</a><div class="cover-body"><h1>Vanilla attention</h1><div class="muted">revision leaf · section</div><div class="anchor">paper-details/found-in-the-middle.md:114</div></div></div>
+<div class="page"></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>Figure 4 image: average attention weight per document position, original versus shuffled order — a U-shape peaking at both ends.</p><p>Figure 4 (p. 3): positions 1 and 20 attract most attention, the middle least. The shuffled control (orange) keeps the U, so the bias is positional, not content-driven; the blue-only position-10 spike is the gold document mid-sequence.</p></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>The paper&#x27;s <strong>vanilla attention</strong> (p. 6) is the raw, uncalibrated self-attention weight <code>Attn(x_prompt,k)</code> used to rank documents, which feeds calibration above. Its formula is never written; standard transformers mean it is Vaswani&#x27;s scaled dot-product attention.</p><div class="narrative-details">▸ Hsieh&#x27;s own definition — page 4, §2.1</div><div class="narrative-details">▸ The inherited computation — Attention Is All You Need (Vaswani et al., 2017)</div><div class="narrative-details">▸ Reading both together — why it&#x27;s the last row</div></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><div class="code-frame-wrap" style="--scroll-lines:13"><iframe class="code-frame" data-code-narrative="151" title="python listing, 7 lines" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+:root { --z: 10px; --bg: #272822; --fg: #f8f8f2; --dim: #75715e; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
+body { display: flex; flex-direction: column;
+       font: var(--z)/1.55 Menlo, Monaco, Consolas, &quot;Courier New&quot;, monospace; }
+.bar { flex: none; display: flex; justify-content: flex-end; gap: 4px;
+       padding: 5px 8px; background: #1e1f1a; }
+.bar button { font: 11px Menlo, Monaco, Consolas, monospace; color: var(--fg);
+              background: #3e3d32; border: 1px solid #555; border-radius: 3px;
+              padding: 2px 7px; cursor: pointer; }
+.bar button:hover { background: #4a4940; }
+pre.shiki, pre.shiki-plain { flex: 1 1 auto; min-height: 0; margin: 0;
+       padding: 12px 14px; overflow: auto; white-space: pre;
+       font-size: var(--z); line-height: 1.55; }
+pre.shiki-plain { background: var(--bg); color: var(--fg); }
+pre.shiki::-webkit-scrollbar, pre.shiki-plain::-webkit-scrollbar { width: 12px; height: 12px; }
+pre.shiki::-webkit-scrollbar-thumb, pre.shiki-plain::-webkit-scrollbar-thumb {
+       background: var(--dim); border-radius: 6px; }
+pre.shiki::-webkit-scrollbar-track, pre.shiki-plain::-webkit-scrollbar-track {
+       background: var(--bg); }
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;bar&quot;&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;-&quot; title=&quot;Zoom out&quot;&gt;&amp;minus;&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;+&quot; title=&quot;Zoom in&quot;&gt;+&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;0&quot; title=&quot;Reset to 100%&quot;&gt;100%&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;copy&quot; title=&quot;Copy the listing&quot;&gt;Copy&lt;/button&gt;
+&lt;/div&gt;
+&lt;pre class=&quot;shiki monokai&quot; style=&quot;background-color:#272822;color:#F8F8F2&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; torch, math&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#66D9EF;font-style:italic&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;color:#A6E22E&quot;&gt; attn_weight_row&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;Q&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;K&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;d_k&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;mask&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;None&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;):&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;    S &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; (Q &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; K.transpose(&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;2&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;)) &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; math.sqrt(d_k)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;    if&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; mask &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;is&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt; not&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt; None&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;        S &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; S.masked_fill(mask, &lt;/span&gt;&lt;span style=&quot;color:#66D9EF;font-style:italic&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#E6DB74&quot;&gt;&#x27;-inf&#x27;&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;))&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; torch.softmax(S, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;dim&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;)   &lt;/span&gt;&lt;span style=&quot;color:#88846F&quot;&gt;# A[q, i] = weight on key i&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;script&gt;
+(function () {
+  var BASE = 10, PX = 10, MIN = 7, MAX = 32, STEP = 2;
+  var root = document.documentElement, pre = document.querySelector(&#x27;pre&#x27;);
+  function apply() { root.style.setProperty(&#x27;--z&#x27;, PX + &#x27;px&#x27;); }
+  document.querySelector(&#x27;.bar&#x27;).addEventListener(&#x27;click&#x27;, function (e) {
+    var b = e.target.closest(&#x27;button&#x27;);
+    if (!b) return;
+    var k = b.getAttribute(&#x27;data-z&#x27;);
+    if (k === &#x27;+&#x27;) { PX = Math.min(MAX, PX + STEP); apply(); }
+    else if (k === &#x27;-&#x27;) { PX = Math.max(MIN, PX - STEP); apply(); }
+    else if (k === &#x27;0&#x27;) { PX = BASE; apply(); }
+    else if (k === &#x27;copy&#x27;) {
+      var text = pre.innerText;
+      var flash = function () {
+        b.textContent = &#x27;Copied&#x27;;
+        setTimeout(function () { b.textContent = &#x27;Copy&#x27;; }, 1200);
+      };
+      var legacy = function () {
+        var t = document.createElement(&#x27;textarea&#x27;);
+        t.value = text; t.setAttribute(&#x27;readonly&#x27;, &#x27;&#x27;);
+        document.body.appendChild(t); t.select();
+        try { document.execCommand(&#x27;copy&#x27;); flash(); } finally { t.remove(); }
+      };
+      if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(flash, legacy);
+      } else { legacy(); }
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="narrative-details">▸ Caveats the paper leaves unresolved</div><div class="narrative-details">▸ Why attention weights are trusted at all</div></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>What is &#x27;vanilla attention&#x27; in this paper, what computation does the number actually come from, and why must the measurement be read off the last query row? What does the shuffled control in Figure 4 rule out?</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>Vanilla attention is the raw, uncalibrated self-attention weight Attn(x_prompt, k) used to rank documents — the number that feeds the calibration step. The paper never writes its formula and never equates it with Vaswani&#x27;s scaled dot-product attention, but the models are standard transformers, so that is what the number is: softmax(QKᵀ/√d_k) over keys, inside multi-head, causally masked decoder self-attention. Hsieh&#x27;s own definition: average the attention weight allocated to a document&#x27;s tokens when predicting the next token — averaged over all its tokens, all decoder layers, and all heads. The paper never defines the per-token weight itself, and says nothing about pre- versus post-softmax or which query position attends. Why the last row: the mask is causal, so only the final query position can attend to every preceding token; &#x27;when predicting the next token&#x27; therefore pins the read to the last row of the attention matrix, and averaging all rows would be a different quantity. Figure 4&#x27;s evidence: attention peaks at positions 1 and 20 and dips in the middle, and the shuffled-order control keeps the U — so the shape is positional, not content-driven. The single spike at position 10 in the unshuffled line is the gold document itself, sitting mid-sequence.</p></div></div></div></details></div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div>![Figure 4 — average attention weight by document position, original vs. shuffled order: a U-shape peaking at both ends](fig4-u-shaped-attention.png)</div><div><em>Figure 4 (p. 3): the U-shape. Documents at positions 1 and 20 get the most attention; the middle gets the least. The orange line is the <strong>shuffled</strong> control — the U survives, so the bias is positional, not content-driven. Note the spike at position 10 in the blue line only: that is the gold document when placed in the middle.</em></div></div></div>
+<div class="page"><h2>Source audit (cont. 2/4)</h2><div class="source"><div>What the paper calls <strong>vanilla attention</strong> (p. 6: &quot;Using uncalibrated attention <code>Attn(x_prompt,k)</code> to rank the documents&quot;) is the raw self-attention weight — the number that feeds the calibration above. The paper never writes its formula, and never states &quot;vanilla attention = Vaswani&#x27;s scaled dot-product attention&quot;, but the models are standard transformers, so that is what the number <em>is</em>.</div><div class="src-details">[details] What Hsieh says it is — page 4, §2.1</div></div></div>
+<div class="page"><h2>Source audit (cont. 3/4)</h2><div class="source"><div class="src-details">[details] The computation it inherits — Attention Is All You Need (Vaswani et al., 2017)</div><div class="src-details">[details] Reading the two together — why it&#x27;s the last row</div><div class="code-frame-wrap" style="--scroll-lines:11"><div class="src-code-lang">[python]</div><iframe class="code-frame" data-code-audit="151" title="python listing, 7 lines" srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;
+:root { --z: 10px; --bg: #272822; --fg: #f8f8f2; --dim: #75715e; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
+body { display: flex; flex-direction: column;
+       font: var(--z)/1.55 Menlo, Monaco, Consolas, &quot;Courier New&quot;, monospace; }
+.bar { flex: none; display: flex; justify-content: flex-end; gap: 4px;
+       padding: 5px 8px; background: #1e1f1a; }
+.bar button { font: 11px Menlo, Monaco, Consolas, monospace; color: var(--fg);
+              background: #3e3d32; border: 1px solid #555; border-radius: 3px;
+              padding: 2px 7px; cursor: pointer; }
+.bar button:hover { background: #4a4940; }
+pre.shiki, pre.shiki-plain { flex: 1 1 auto; min-height: 0; margin: 0;
+       padding: 12px 14px; overflow: auto; white-space: pre;
+       font-size: var(--z); line-height: 1.55; }
+pre.shiki-plain { background: var(--bg); color: var(--fg); }
+pre.shiki::-webkit-scrollbar, pre.shiki-plain::-webkit-scrollbar { width: 12px; height: 12px; }
+pre.shiki::-webkit-scrollbar-thumb, pre.shiki-plain::-webkit-scrollbar-thumb {
+       background: var(--dim); border-radius: 6px; }
+pre.shiki::-webkit-scrollbar-track, pre.shiki-plain::-webkit-scrollbar-track {
+       background: var(--bg); }
+&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;bar&quot;&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;-&quot; title=&quot;Zoom out&quot;&gt;&amp;minus;&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;+&quot; title=&quot;Zoom in&quot;&gt;+&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;0&quot; title=&quot;Reset to 100%&quot;&gt;100%&lt;/button&gt;
+  &lt;button type=&quot;button&quot; data-z=&quot;copy&quot; title=&quot;Copy the listing&quot;&gt;Copy&lt;/button&gt;
+&lt;/div&gt;
+&lt;pre class=&quot;shiki monokai&quot; style=&quot;background-color:#272822;color:#F8F8F2&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; torch, math&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#66D9EF;font-style:italic&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;color:#A6E22E&quot;&gt; attn_weight_row&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;Q&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;K&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;d_k&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;mask&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;None&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;):&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;    S &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; (Q &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;@&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; K.transpose(&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;2&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;)) &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; math.sqrt(d_k)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;    if&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; mask &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;is&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt; not&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt; None&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;        S &lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; S.masked_fill(mask, &lt;/span&gt;&lt;span style=&quot;color:#66D9EF;font-style:italic&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;(&lt;/span&gt;&lt;span style=&quot;color:#E6DB74&quot;&gt;&#x27;-inf&#x27;&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;))&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;color:#F92672&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt; torch.softmax(S, &lt;/span&gt;&lt;span style=&quot;color:#FD971F;font-style:italic&quot;&gt;dim&lt;/span&gt;&lt;span style=&quot;color:#F92672&quot;&gt;=-&lt;/span&gt;&lt;span style=&quot;color:#AE81FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;color:#F8F8F2&quot;&gt;)   &lt;/span&gt;&lt;span style=&quot;color:#88846F&quot;&gt;# A[q, i] = weight on key i&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;script&gt;
+(function () {
+  var BASE = 10, PX = 10, MIN = 7, MAX = 32, STEP = 2;
+  var root = document.documentElement, pre = document.querySelector(&#x27;pre&#x27;);
+  function apply() { root.style.setProperty(&#x27;--z&#x27;, PX + &#x27;px&#x27;); }
+  document.querySelector(&#x27;.bar&#x27;).addEventListener(&#x27;click&#x27;, function (e) {
+    var b = e.target.closest(&#x27;button&#x27;);
+    if (!b) return;
+    var k = b.getAttribute(&#x27;data-z&#x27;);
+    if (k === &#x27;+&#x27;) { PX = Math.min(MAX, PX + STEP); apply(); }
+    else if (k === &#x27;-&#x27;) { PX = Math.max(MIN, PX - STEP); apply(); }
+    else if (k === &#x27;0&#x27;) { PX = BASE; apply(); }
+    else if (k === &#x27;copy&#x27;) {
+      var text = pre.innerText;
+      var flash = function () {
+        b.textContent = &#x27;Copied&#x27;;
+        setTimeout(function () { b.textContent = &#x27;Copy&#x27;; }, 1200);
+      };
+      var legacy = function () {
+        var t = document.createElement(&#x27;textarea&#x27;);
+        t.value = text; t.setAttribute(&#x27;readonly&#x27;, &#x27;&#x27;);
+        document.body.appendChild(t); t.select();
+        try { document.execCommand(&#x27;copy&#x27;); flash(); } finally { t.remove(); }
+      };
+      if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(flash, legacy);
+      } else { legacy(); }
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="src-details">[details] Caveats the paper does not resolve</div></div></div>
+<div class="page"><h2>Source audit (cont. 4/4)</h2><div class="source"><div class="src-details">[details] Why they trust attention weights at all</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>Vanilla attention</h1><div class="muted">— end of leaf —</div><div class="anchor">paper-details/found-in-the-middle.md:114</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--vanilla-attention">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>

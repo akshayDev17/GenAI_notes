@@ -1,0 +1,83 @@
+# Publish the revision atlas as this repository's GitHub Pages site.
+#
+# The architecture this encodes, and why it is shaped this way:
+#
+#   * The atlas is BUILT LOCALLY and committed. It cannot be built here: the pipeline
+#     needs node + shiki + mathjax + a headless Chromium for the listings, maths and
+#     diagrams, and four of its inputs are agent passes that come from a model. So CI
+#     publishes an artifact; it does not produce one.
+#
+#   * `Harness Engineering/mindmaps/` IS the site root — the build root and the publish
+#     root are the same directory. The skill's `--mindmaps` output is what gets served,
+#     in place, so there is no copy step to keep in sync and no second place to look
+#     when something is stale.
+#
+#   * This is the reason Pages is configured for the WORKFLOW source rather than
+#     "deploy from a branch". Branch-based Pages offers exactly two folders, `/` and
+#     `/docs`. Workflow-based Pages takes any path as the artifact root, which is what
+#     lets the atlas stay where its source is instead of being relocated into a
+#     repository-global `docs/`.
+#
+#   * Paths inside the atlas are all relative (verified: 0 absolute href/src, 0
+#     external CSS/JS references, no fetch/XHR), so moving the tree to the site root
+#     needs no rewriting. `assets/` lands at /assets/, the map at /index.html, and each
+#     notebook's `../../../assets/` and `../../../index.html` resolve exactly as they
+#     did locally.
+#
+# One-time setup, if the first run complains that Pages is not enabled:
+#   Settings → Pages → Source → "GitHub Actions".
+# `enablement: true` below asks the API to create the site for us, which usually makes
+# that step unnecessary — but it cannot convert a site already configured for the
+# branch source, so if Pages was ever enabled by hand, set the source explicitly.
+
+name: Publish the atlas
+
+on:
+  push:
+    branches: [main]
+    # Only an atlas change should redeploy. Editing a module's markdown does not
+    # change the published tree until the pipeline is re-run and the output committed.
+    paths:
+      - "Harness Engineering/mindmaps/**"
+      - ".github/workflows/publish-atlas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push supersedes an in-flight one rather than racing it.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # The action hands `path` to tar as an argv element rather than through a shell,
+      # so the space in "Harness Engineering" is safe. If it ever is not, stage the tree
+      # into `_site/` first (`cp -R "Harness Engineering/mindmaps/." _site/`) and point
+      # this at `_site` — a copy that lives for the length of the job and is nobody's
+      # maintenance burden. It is also the place to add a landing page later, if the
+      # atlas should sit at /harness-engineering/ rather than at the site root.
+      - name: Upload the atlas as the site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "Harness Engineering/mindmaps"
+
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4

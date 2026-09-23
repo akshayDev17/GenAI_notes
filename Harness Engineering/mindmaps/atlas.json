@@ -1,0 +1,13 @@
+{
+  "course": "Harness Engineering: Designing the Systems Around AI Agents",
+  "repo": "Harness Engineering",
+  "index": "mindmaps/index.html",
+  "modules": [
+    {
+      "id": "04-context-engineering-1",
+      "title": "M4 \u00b7 Context Engineering I: Assembly & Budgets",
+      "readme": "modules/04-context-engineering-1/README.md",
+      "anchor": "mindmaps/index.html#04-context-engineering-1"
+    }
+  ]
+}

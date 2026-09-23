@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>11. Framework claims: verified against the docs, with three corrections — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--11-framework-claims-verified-against-the-docs-with-three-corrections">&larr; course map</a><div class="cover-body"><h1>11. Framework claims: verified against the docs, with three corrections</h1><div class="muted">revision leaf · section</div><div class="anchor">README.md:732</div></div></div>
+<div class="page"></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>Verified against the live ADK documentation and the google/adk-python source, not the module&#x27;s prose.</p><ul class="narrative-list"><li>Confirmed exactly: ContextCacheConfig defaults (ttl_seconds=1800, cache_intervals=10); EventsCompactionConfig&#x27;s threshold/retention and interval/overlap fields; LlmEventSummarizer; InvocationContext, Runner, run_async; and static_instruction amending system instructions.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Correction 1: min_tokens defaults to 0 — the module&#x27;s don&#x27;t-cache-tiny-requests gloss is intended use, not the default; the doc&#x27;s 2048/600/5 values are illustrative and easily mistaken for defaults.</li><li>Correction 2: caching is not Gemini-only — the same ContextCacheConfig routes to Anthropic via cache_control and through LiteLLM, though Azure support is narrower than Anthropic&#x27;s.</li><li>Correction 3: the docs never promise static_instruction survives a whole session — it is a per-agent constant re-sent each turn, and alone it enables no caching.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>Side-benefit: Claude Code publishes startup token counts — 4,200 system prompt, 1,800 project instructions, about 970 MCP and skill listings — concrete fixed overhead, unlike the unavailable percentage.</p></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>For the ADK framework claims, list what was confirmed exactly and the three corrections — stating, for each correction, the specific distinction that makes it matter.</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>**Confirmed exactly** against the live ADK documentation and `google/adk-python` source: `ContextCacheConfig` defaults `ttl_seconds=1800` and `cache_intervals=10`; `EventsCompactionConfig` with `token_threshold`/`event_retention_size` and `compaction_interval`/`overlap_size`, plus `LlmEventSummarizer` with a configurable model; `InvocationContext`, `Runner`, `run_async`; and `static_instruction` as a way to amend the system instructions for a generative model.</p></div><div class="reveal-page" hidden><p>**Correction 1 — `min_tokens` defaults to `0`.** The module&#x27;s gloss &quot;don&#x27;t bother caching tiny requests&quot; describes intended use, not the default; avoiding small-request caching is opt-in. The distinction is easy to miss because the doc&#x27;s own example (`min_tokens=2048, ttl_seconds=600, cache_intervals=5`) uses example values that read like defaults.</p></div><div class="reveal-page" hidden><p>**Correction 2 — caching is not Gemini-only in implementation.** The public page is titled &quot;Context caching with Gemini&quot;, but the same `ContextCacheConfig` is routed to Anthropic via `cache_control` breakpoints and through LiteLLM. The module&#x27;s provider-layer claim is directionally right; the caveat is that Azure support is narrower than Anthropic&#x27;s.</p></div><div class="reveal-page" hidden><p>**Correction 3 — `static_instruction` does not &quot;persist across a session&quot;.** That is the module&#x27;s wording, not the docs&#x27;. It is a constant on the agent, re-sent every turn, and the source notes that setting it alone does NOT enable caching automatically.</p><p>Side-benefit of checking a real harness: Claude Code publishes representative startup token counts — a 4,200-token system prompt, 1,800 tokens of project instructions, ~970 tokens of MCP and skill listings. A concrete instance of fixed overhead, worth more than an unavailable across-the-board percentage.</p></div></div><div class="reveal-pager"><button type="button" data-dir="prev" aria-label="Previous reveal page" disabled>&lsaquo; Previous</button><span class="pager-count" aria-live="polite">1 / 4</span><button type="button" data-dir="next" aria-label="Next reveal page">Next &rsaquo;</button></div></div></details></div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div>Checked against the live ADK documentation and <code>google/adk-python</code> source rather than against the module&#x27;s prose:</div></div></div>
+<div class="page"><h2>Source audit (cont. 2/6)</h2><div class="source"><div><strong>Confirmed exactly:</strong> <code>ContextCacheConfig</code> defaults <code>ttl_seconds=1800</code> and <code>cache_intervals=10</code>;[adk-context-caching](#adk-context-caching) <code>EventsCompactionConfig</code> with <code>token_threshold</code>/<code>event_retention_size</code> and <code>compaction_interval</code>/<code>overlap_size</code>, plus <code>LlmEventSummarizer</code> with a configurable model;[adk-context-compaction](#adk-context-compaction) <code>InvocationContext</code>, <code>Runner</code>, and <code>run_async</code>;[adk-context](#adk-context) <code>static_instruction</code> as &quot;a way to amend the system instructions for a generative model.&quot;[adk-context-caching](#adk-context-caching)</div></div></div>
+<div class="page"><h2>Source audit (cont. 3/6)</h2><div class="source"><div><strong>Correction 1 — <code>min_tokens</code> defaults to <code>0</code>.[adk-context-caching](#adk-context-caching)</strong> The module&#x27;s gloss &quot;don&#x27;t bother caching tiny requests&quot; describes <em>intended use</em>, not the default; avoiding small-request caching is opt-in. (The doc&#x27;s own example uses <code>min_tokens=2048, ttl_seconds=600, cache_intervals=5</code> — example values that are easy to mistake for defaults.)</div></div></div>
+<div class="page"><h2>Source audit (cont. 4/6)</h2><div class="source"><div><strong>Correction 2 — caching is not Gemini-only in implementation.</strong> The public page is titled &quot;Context caching with Gemini,&quot; but the same <code>ContextCacheConfig</code> is routed to Anthropic (<code>cache_control</code> breakpoints) and through LiteLLM. The module&#x27;s &quot;with LiteLLM/Azure backends … at the <em>provider</em> layer&quot; is directionally right; the caveat is that Azure support is narrower than Anthropic&#x27;s.</div></div></div>
+<div class="page"><h2>Source audit (cont. 5/6)</h2><div class="source"><div><strong>Correction 3 — <code>static_instruction</code> &quot;persist[s] across a session&quot; is the module&#x27;s wording, not the docs&#x27;.</strong> It is a constant on the agent, re-sent every turn, and the source notes that setting it &quot;alone does NOT enable caching automatically.&quot;</div></div></div>
+<div class="page"><h2>Source audit (cont. 6/6)</h2><div class="source"><div>A useful side-benefit of checking a real harness: Claude Code publishes representative startup token counts — a 4,200-token system prompt, 1,800 tokens of project instructions, ~970 tokens of MCP and skill listings.[claude-code-context-window](#claude-code-context-window) That is a concrete instance of &quot;fixed overhead,&quot; and it is worth more than a borrowed across-the-board percentage, which remains unavailable.</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>11. Framework claims: verified against the docs, with three corrections</h1><div class="muted">— end of leaf —</div><div class="anchor">README.md:732</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--11-framework-claims-verified-against-the-docs-with-three-corrections">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>

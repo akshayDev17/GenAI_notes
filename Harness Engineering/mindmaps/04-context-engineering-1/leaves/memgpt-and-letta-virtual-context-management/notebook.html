@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>MemGPT and Letta: virtual context management — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--memgpt-and-letta-virtual-context-management">&larr; course map</a><div class="cover-body"><h1>MemGPT and Letta: virtual context management</h1><div class="muted">revision leaf · section</div><div class="anchor">selective-context-assembly.md:219</div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Idea: a fixed main context (the window) beside an external context (full history), with a memory manager paging relevant data in and out per turn.</li><li>Relevance here: it formalizes, peer-reviewed, the rule that an assembly layer pulls only the relevant subset into the window.</li><li>Provenance: the MemGPT paper (ICLR 2024); the project is now Letta and ships in production.</li></ul></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>State MemGPT&#x27;s virtual context management idea as a structure - the two contexts and what the manager does each turn - and explain why that counts as the same claim as an assembly layer rather than a different one.</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>MemGPT formalizes it as virtual context management: a fixed main context (the window) plus an external context (the full history), with a memory manager that pages relevant data in and out each turn. That is the same claim as an assembly layer stated in operating-system terms - not everything goes into the window, and a layer pulls the relevant subset per turn - except here it is formalized and peer-reviewed rather than merely argued. Provenance: &quot;MemGPT: Towards LLMs as Operating Systems,&quot; ICLR 2024; the project is now Letta and ships in production. The paging structure, not the specific system, is the load-bearing part.</p></div></div></div></details></div></div>
+<div class="page page-diagram"><h2>Diagram</h2><div class="diagram"><div class="diagram-zoom"><svg id="d19" width="735.328125" xmlns="http://www.w3.org/2000/svg" class="flowchart" height="82.5999984741211" viewBox="0 0 735.328125 82.5999984741211" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#d19{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#d19 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#d19 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#d19 .error-icon{fill:#552222;}#d19 .error-text{fill:#552222;stroke:#552222;}#d19 .edge-thickness-normal{stroke-width:1px;}#d19 .edge-thickness-thick{stroke-width:3.5px;}#d19 .edge-pattern-solid{stroke-dasharray:0;}#d19 .edge-thickness-invisible{stroke-width:0;fill:none;}#d19 .edge-pattern-dashed{stroke-dasharray:3;}#d19 .edge-pattern-dotted{stroke-dasharray:2;}#d19 .marker{fill:#666;stroke:#666;}#d19 .marker.cross{stroke:#666;}#d19 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#d19 p{margin:0;}#d19 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#d19 .cluster-label text{fill:#333;}#d19 .cluster-label span{color:#333;}#d19 .cluster-label span p{background-color:transparent;}#d19 .label text,#d19 span{fill:#000000;color:#000000;}#d19 .node rect,#d19 .node circle,#d19 .node ellipse,#d19 .node polygon,#d19 .node path{fill:#eee;stroke:#999;stroke-width:1px;}#d19 .rough-node .label text,#d19 .node .label text,#d19 .image-shape .label,#d19 .icon-shape .label{text-anchor:middle;}#d19 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#d19 .rough-node .label,#d19 .node .label,#d19 .image-shape .label,#d19 .icon-shape .label{text-align:center;}#d19 .node.clickable{cursor:pointer;}#d19 .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#d19 .arrowheadPath{fill:#333333;}#d19 .edgePaths .path{stroke:#666;stroke-width:1px;}#d19 .flowchart-link{stroke:#666;fill:none;}#d19 .edgeLabel{background-color:white;text-align:center;}#d19 .edgeLabel p{background-color:white;}#d19 .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#d19 .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#d19 .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#d19 .cluster text{fill:#333;}#d19 .cluster span{color:#333;}#d19 .node .collapsed-indicator{fill:#707070;stroke:none;opacity:0.6;}#d19 .node .collapsed-separator{stroke:#707070;stroke-width:0.75px;}#d19 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#d19 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#d19 rect.text{fill:none;stroke-width:0;}#d19 .icon-shape,#d19 .image-shape{background-color:white;text-align:center;}#d19 .icon-shape p,#d19 .image-shape p{background-color:white;padding:2px;}#d19 .icon-shape .label rect,#d19 .image-shape .label rect{opacity:0.5;background-color:white;fill:white;}#d19 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#d19 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#d19 .node .neo-node{stroke:#999;}#d19 [data-look="neo"].node rect,#d19 [data-look="neo"].cluster rect,#d19 [data-look="neo"].node polygon{stroke:url(#d19-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d19 [data-look="neo"].swimlane.cluster rect{filter:none;}#d19 [data-look="neo"].node path{stroke:url(#d19-gradient);stroke-width:1px;}#d19 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d19 [data-look="neo"].node .neo-line path{stroke:#999;filter:none;}#d19 [data-look="neo"].node circle{stroke:url(#d19-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d19 [data-look="neo"].node circle .state-start{fill:#000000;}#d19 [data-look="neo"].icon-shape .icon{fill:url(#d19-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d19 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#d19-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d19 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="d19_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d19_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d19_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="d19_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="d19_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d19_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d19_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d19_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d19_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d19_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d19_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="d19_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M187.25,41.3L191.417,41.3C195.583,41.3,203.917,41.3,211.583,41.3C219.25,41.3,226.25,41.3,229.75,41.3L233.25,41.3" id="d19-L_a_b_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_a_b_0" data-points="W3sieCI6MTg3LjI1LCJ5Ijo0MS4yOTk5OTkyMzcwNjA1NX0seyJ4IjoyMTIuMjUsInkiOjQxLjI5OTk5OTIzNzA2MDU1fSx7IngiOjIzNy4yNSwieSI6NDEuMjk5OTk5MjM3MDYwNTV9XQ==" data-look="classic" marker-end="url(#d19_flowchart-v2-pointEnd)"></path><path d="M465.328,41.3L469.495,41.3C473.661,41.3,481.995,41.3,489.661,41.3C497.328,41.3,504.328,41.3,507.828,41.3L511.328,41.3" id="d19-L_b_c_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_b_c_0" data-points="W3sieCI6NDY1LjMyODEyNSwieSI6NDEuMjk5OTk5MjM3MDYwNTV9LHsieCI6NDkwLjMyODEyNSwieSI6NDEuMjk5OTk5MjM3MDYwNTV9LHsieCI6NTE1LjMyODEyNSwieSI6NDEuMjk5OTk5MjM3MDYwNTV9XQ==" data-look="classic" marker-end="url(#d19_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_a_b_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_b_c_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g></g><g class="nodes"><g class="node default" id="d19-flowchart-a-0" data-look="classic" transform="translate(97.625, 41.29999923706055)"><rect class="basic label-container" style="" x="-89.625" y="-24.5" width="179.25" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">External</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> context</tspan></tspan></text></g></g></g><g class="node default" id="d19-flowchart-b-1" data-look="classic" transform="translate(351.2890625, 41.29999923706055)"><rect class="basic label-container" style="" x="-114.0390625" y="-33.29999923706055" width="228.078125" height="66.5999984741211"></rect><g class="label" style="" transform="translate(0, -18.299999237060547)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Memory</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> manager</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> pages</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">turns</tspan></tspan></text></g></g></g><g class="node default" id="d19-flowchart-c-3" data-look="classic" transform="translate(621.328125, 41.29999923706055)"><rect class="basic label-container" style="" x="-106" y="-24.5" width="212" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Main</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> context</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> window</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="d19-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><defs><filter id="d19-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><linearGradient id="d19-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"></stop></linearGradient></svg></div></div><div class="diagram-hint">drag to pan · scroll to zoom · double-click to reset</div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div><strong>The idea:</strong> a fixed <em>main context</em> (the window) plus an <em>external context</em> (the full history), and a <em>memory manager</em> that <strong>pages relevant data in and out each turn</strong>.</div><div><strong>Why it matters here:</strong> this is literally &quot;not everything goes into the window; an assembly layer pulls the relevant subset&quot; — formalized and peer-reviewed.</div></div></div>
+<div class="page"><h2>Source audit (cont. 2/2)</h2><div class="source"><div><strong>Provenance:</strong> [MemGPT: Towards LLMs as Operating Systems](https://arxiv.org/abs/2310.08560), ICLR 2024. The project is now <strong>Letta</strong>, and it ships in production.</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>MemGPT and Letta: virtual context management</h1><div class="muted">— end of leaf —</div><div class="anchor">selective-context-assembly.md:219</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--memgpt-and-letta-virtual-context-management">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>

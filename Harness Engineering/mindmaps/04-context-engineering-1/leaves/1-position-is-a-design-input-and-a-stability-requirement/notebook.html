@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>1. Position is a design input — and a stability requirement — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--1-position-is-a-design-input-and-a-stability-requirement">&larr; course map</a><div class="cover-body"><h1>1. Position is a design input — and a stability requirement</h1><div class="muted">revision leaf · section</div><div class="anchor">README.md:175</div></div></div>
+<div class="page"></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Position and stability are two separate reasons to care about placement, easily conflated.</li><li>Where content sits changes whether it is used.</li><li>Whether the prefix changes determines whether it is cacheable at all.</li><li>Placement rule: the same slots every turn.</li><li>Beginning holds standing policy (primacy); instructions that must persist across turns belong at the start.</li><li>End holds the current task and the latest few messages (recency) - what the model looks at while producing the next token.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Middle: supporting material only - retrieval, tool results, uncompacted history - since use and attention dip there. Attention walkthrough: found-in-the-middle.md.</li><li>Keep it small: this is the slot compaction exists to drain.</li><li>Ordering within a pair matters independently of position.</li><li>Context precedes the question that reads it, worth up to +31%; the reverse order costs over 14 percentage points.</li><li>Stability is the requirement that position alone does not give you.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Caching keys off a prefix that is unchanging, not one that is important.</li><li>Policy-first is not enough; policy-first-and-never-changing is what makes the prefix cacheable.</li><li>In ADK, <code>static_instruction</code> is the knob: instructions persisting across a session, held in the stable prefix instead of re-sent inside the mutable body.</li><li>Memorability test: position raises the odds of use, it does not guarantee it.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Load-bearing facts should be re-injected near their point of use instead of trusting end-placement alone.</li><li>The position penalty is fill-dependent, not a fixed law.</li></ul></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>Why are position and stability two different reasons to care about placement, and which one does caching respond to? Then give the placement rule for beginning, middle and end, plus the ordering rule that holds independently of position.</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>Two reasons, easy to conflate. (1) Where content sits changes whether it is used — a primacy/recency effect. (2) Whether the prefix changes determines whether it is cacheable at all — a stability effect. Caching keys off an unchanging prefix, not an important one, so policy-first is not enough: policy-first-and-never-changing is what makes a prefix cacheable. In ADK the knob is static_instruction — instructions that persist across a session, held in the stable prefix instead of re-sent inside the mutable body. Placement rule, same slots every turn: beginning holds the standing policy, since instructions that must persist across turns belong at the start (primacy); end holds the current task and the latest few messages (recency) — what the model looks at while producing the next token; middle holds supporting material only — retrieved context, tool results, not-yet-compacted history — because use and attention both dip there, so it may carry only what the model may look back at, never what it must act on or remember. Keep that slot small; it is the one compaction exists to drain. Ordering within a pair is independent of position: context precedes the question that reads it, worth up to +31%, while the reverse order costs over 14 percentage points. Memorability test: position raises the odds of use but does not guarantee it, so re-inject load-bearing facts near their point of use rather than trusting end-placement — and the position penalty is fill-dependent, not a fixed law.</p></div></div></div></details></div></div>
+<div class="page page-diagram"><h2>Diagram</h2><div class="diagram"><div class="diagram-zoom"><svg id="d8" width="806.421875" xmlns="http://www.w3.org/2000/svg" class="flowchart" height="164" viewBox="0 0 806.421875 164" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#d8{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#d8 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#d8 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#d8 .error-icon{fill:#552222;}#d8 .error-text{fill:#552222;stroke:#552222;}#d8 .edge-thickness-normal{stroke-width:1px;}#d8 .edge-thickness-thick{stroke-width:3.5px;}#d8 .edge-pattern-solid{stroke-dasharray:0;}#d8 .edge-thickness-invisible{stroke-width:0;fill:none;}#d8 .edge-pattern-dashed{stroke-dasharray:3;}#d8 .edge-pattern-dotted{stroke-dasharray:2;}#d8 .marker{fill:#666;stroke:#666;}#d8 .marker.cross{stroke:#666;}#d8 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#d8 p{margin:0;}#d8 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#d8 .cluster-label text{fill:#333;}#d8 .cluster-label span{color:#333;}#d8 .cluster-label span p{background-color:transparent;}#d8 .label text,#d8 span{fill:#000000;color:#000000;}#d8 .node rect,#d8 .node circle,#d8 .node ellipse,#d8 .node polygon,#d8 .node path{fill:#eee;stroke:#999;stroke-width:1px;}#d8 .rough-node .label text,#d8 .node .label text,#d8 .image-shape .label,#d8 .icon-shape .label{text-anchor:middle;}#d8 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#d8 .rough-node .label,#d8 .node .label,#d8 .image-shape .label,#d8 .icon-shape .label{text-align:center;}#d8 .node.clickable{cursor:pointer;}#d8 .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#d8 .arrowheadPath{fill:#333333;}#d8 .edgePaths .path{stroke:#666;stroke-width:1px;}#d8 .flowchart-link{stroke:#666;fill:none;}#d8 .edgeLabel{background-color:white;text-align:center;}#d8 .edgeLabel p{background-color:white;}#d8 .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#d8 .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#d8 .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#d8 .cluster text{fill:#333;}#d8 .cluster span{color:#333;}#d8 .node .collapsed-indicator{fill:#707070;stroke:none;opacity:0.6;}#d8 .node .collapsed-separator{stroke:#707070;stroke-width:0.75px;}#d8 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#d8 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#d8 rect.text{fill:none;stroke-width:0;}#d8 .icon-shape,#d8 .image-shape{background-color:white;text-align:center;}#d8 .icon-shape p,#d8 .image-shape p{background-color:white;padding:2px;}#d8 .icon-shape .label rect,#d8 .image-shape .label rect{opacity:0.5;background-color:white;fill:white;}#d8 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#d8 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#d8 .node .neo-node{stroke:#999;}#d8 [data-look="neo"].node rect,#d8 [data-look="neo"].cluster rect,#d8 [data-look="neo"].node polygon{stroke:url(#d8-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d8 [data-look="neo"].swimlane.cluster rect{filter:none;}#d8 [data-look="neo"].node path{stroke:url(#d8-gradient);stroke-width:1px;}#d8 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d8 [data-look="neo"].node .neo-line path{stroke:#999;filter:none;}#d8 [data-look="neo"].node circle{stroke:url(#d8-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d8 [data-look="neo"].node circle .state-start{fill:#000000;}#d8 [data-look="neo"].icon-shape .icon{fill:url(#d8-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d8 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#d8-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d8 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="d8_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d8_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d8_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="d8_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="d8_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d8_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d8_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d8_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d8_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d8_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d8_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="d8_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M358.227,45.033L320.484,51.194C282.742,57.355,207.258,69.678,169.516,79.339C131.773,89,131.773,96,131.773,99.5L131.773,103" id="d8-L_w_b_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_w_b_0" data-points="W3sieCI6MzU4LjIyNjU2MjUsInkiOjQ1LjAzMjgyNDA1Mzc5NjQxfSx7IngiOjEzMS43NzM0Mzc1LCJ5Ijo4Mn0seyJ4IjoxMzEuNzczNDM3NSwieSI6MTA3fV0=" data-look="classic" marker-end="url(#d8_flowchart-v2-pointEnd)"></path><path d="M435,57L435,61.167C435,65.333,435,73.667,435,81.333C435,89,435,96,435,99.5L435,103" id="d8-L_w_m_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_w_m_0" data-points="W3sieCI6NDM1LCJ5Ijo1N30seyJ4Ijo0MzUsInkiOjgyfSx7IngiOjQzNSwieSI6MTA3fV0=" data-look="classic" marker-end="url(#d8_flowchart-v2-pointEnd)"></path><path d="M511.773,46.501L544.217,52.417C576.661,58.334,641.549,70.167,673.993,79.583C706.438,89,706.438,96,706.438,99.5L706.438,103" id="d8-L_w_e_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_w_e_0" data-points="W3sieCI6NTExLjc3MzQzNzUsInkiOjQ2LjUwMDU5MDAyOTkzMzIzfSx7IngiOjcwNi40Mzc1LCJ5Ijo4Mn0seyJ4Ijo3MDYuNDM3NSwieSI6MTA3fV0=" data-look="classic" marker-end="url(#d8_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_w_b_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_w_m_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_w_e_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g></g><g class="nodes"><g class="node default" id="d8-flowchart-w-0" data-look="classic" transform="translate(435, 32.5)"><rect class="basic label-container" style="" x="-76.7734375" y="-24.5" width="153.546875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Window</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> slots</tspan></tspan></text></g></g></g><g class="node default" id="d8-flowchart-b-1" data-look="classic" transform="translate(131.7734375, 131.5)"><rect class="basic label-container" style="" x="-123.7734375" y="-24.5" width="247.546875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Beginning:</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> standing</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> policy</tspan></tspan></text></g></g></g><g class="node default" id="d8-flowchart-m-3" data-look="classic" transform="translate(435, 131.5)"><rect class="basic label-container" style="" x="-129.453125" y="-24.5" width="258.90625" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Middle:</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> supporting</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> material</tspan></tspan></text></g></g></g><g class="node default" id="d8-flowchart-e-5" data-look="classic" transform="translate(706.4375, 131.5)"><rect class="basic label-container" style="" x="-91.984375" y="-24.5" width="183.96875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">End:</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> current</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> task</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="d8-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><defs><filter id="d8-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><linearGradient id="d8-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"></stop></linearGradient></svg></div></div><div class="diagram-hint">drag to pan · scroll to zoom · double-click to reset</div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div><strong>Position and stability are two separate reasons to care about placement</strong> — easy to conflate:</div><div><strong>Where it sits</strong> changes whether the content is <em>used</em>.</div><div><strong>Whether the prefix changes</strong> determines whether it is <em>cacheable at all</em>.</div><div><strong>Placement rule</strong> — same slots every turn:</div></div></div>
+<div class="page"><h2>Source audit (cont. 2/6)</h2><div class="source"><div><strong>Beginning → the standing policy</strong> (primacy). Instructions that must persist across turns belong at the start.[liu-lost-in-the-middle](#liu-lost-in-the-middle), [hsieh-found-in-the-middle](#hsieh-found-in-the-middle)</div><div><strong>End → the current task and latest few messages</strong> (recency). That is what the model looks at as it produces the next token.[liu-lost-in-the-middle](#liu-lost-in-the-middle)</div></div></div>
+<div class="page"><h2>Source audit (cont. 3/6)</h2><div class="source"><div><strong>Middle → supporting material only</strong> (retrieved context, tool results, not-yet-compacted history). Use and attention both dip here, so it holds only what the model may <em>look back at</em> — never what it must <em>act on</em> or <em>remember</em>.[liu-lost-in-the-middle](#liu-lost-in-the-middle), [hsieh-found-in-the-middle](#hsieh-found-in-the-middle) <em>(full attention walkthrough → [found-in-the-middle.md](paper-details/found-in-the-middle.md))</em></div><div>Keep it small: it is the slot compaction exists to drain.</div></div></div>
+<div class="page"><h2>Source audit (cont. 4/6)</h2><div class="source"><div><strong>Ordering within a pair</strong> — order matters independently of position:</div><div><strong>Context precedes the question that reads it.</strong> Worth up to <strong>+31%</strong>; the reverse order costs over <strong>14 percentage points</strong>.[shaier-context-before-question](#shaier-context-before-question), [ok-prompt-order](#ok-prompt-order)</div><div><strong>Stability requirement</strong> — the part position alone does <em>not</em> give you:</div></div></div>
+<div class="page"><h2>Source audit (cont. 5/6)</h2><div class="source"><div>Caching keys off an <strong>unchanging</strong> prefix, not an <em>important</em> one.[adk-context-caching](#adk-context-caching)</div><div>Policy-first is not enough — policy-first-and-<strong>never-changing</strong> is what makes the prefix cacheable.</div><div>In ADK, <code>static_instruction</code> is the knob for this: instructions that persist across a session, held in the stable prefix rather than re-sent as part of the mutable body.[adk-context-caching](#adk-context-caching), [unsupported](#unsupported)</div></div></div>
+<div class="page"><h2>Source audit (cont. 6/6)</h2><div class="source"><div><strong>Memorability test</strong> — position raises the odds, it does not guarantee use:</div><div>If a fact is load-bearing, re-inject it near the point of use rather than trusting end-placement alone.</div><div>The position penalty is <strong>fill-dependent</strong>, not a fixed law.[veseli-positional-biases](#veseli-positional-biases)</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>1. Position is a design input — and a stability requirement</h1><div class="muted">— end of leaf —</div><div class="anchor">README.md:175</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--1-position-is-a-design-input-and-a-stability-requirement">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>

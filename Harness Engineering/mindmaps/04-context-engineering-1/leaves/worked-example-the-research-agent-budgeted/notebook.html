@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Worked example: the research agent, budgeted — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--worked-example-the-research-agent-budgeted">&larr; course map</a><div class="cover-body"><h1>Worked example: the research agent, budgeted</h1><div class="muted">revision leaf · section</div><div class="anchor">README.md:587</div></div></div>
+<div class="page"></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>The domain spine made concrete: a research agent&#x27;s three-hour corpus session, and how a designed context budget absorbs what accumulates.</p><ul class="narrative-list"><li>Stable prefix (~4k): system instructions, tool definitions and output format — cached, sent once and reused for the whole session.</li><li>Per-turn retrieval (~2–4k): the top chunks for the current question, fresh each turn and evicted once used.</li><li>Tool results (variable): a fetch_paper call returns 8k tokens; the harness keeps abstract plus excerpt (~500) and truncates at the seam.</li></ul></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Conversation history: compacted roughly every six turns into a running progress summary, last four turns verbatim, so history cost stays flat.</li><li>Scratchpad: intermediate reasoning is not persisted across turns — held in working memory (M7) or regenerated when needed.</li></ul><p>Result: at hour three the window sits at ~10–12k, not 90k — question last, policy first, early questions answered as well as new; it never got fat.</p></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>Tradeoff: truncation can drop needed detail, compaction loses fidelity, and budgets force load-bearing evictions — so make every eviction a named decision with its cost written down.</p></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>In the budgeted three-hour research agent, name each of the five window components and the specific budget mechanism applied to it. Then state what the discipline actually is — and why the two failure directions have different visibility.</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>Five accumulators and the mechanism each gets:</p><p class="reveal-bullet">Stable prefix (~4k): system instructions, tool definitions, output format — cacheable, sent once, reused all session.</p><p class="reveal-bullet">Per-turn retrieval (~2-4k): top chunks for *this* question only — fresh each turn, evicted after use.</p></div><div class="reveal-page" hidden><p class="reveal-bullet">Tool results (variable): an 8k-token `fetch_paper` dump is truncated at the seam to abstract + relevant excerpt (~500 tokens); the full text is stored as an artifact.</p><p class="reveal-bullet">Conversation history: compacted every ~6 turns into a running research-progress summary, last 4 turns kept verbatim — cost stays flat instead of growing linearly.</p></div><div class="reveal-page" hidden><p class="reveal-bullet">Scratchpad: intermediate reasoning is kept out of the window — held in working memory or regenerated when needed.</p><p>Result at hour three: ~10-12k, not 90k; current question last (recency), policy first (primacy).</p></div><div class="reveal-page" hidden><p>The discipline is not &quot;keep the window small&quot;. It is making every eviction and every compaction a named decision with its cost written down — because the two failure directions differ in visibility. The failure you are preventing (attention collapse, cost blowup) is invisible until catastrophic; the failure you are causing (a dropped detail) surfaces much later, if ever. Truncation can drop the detail the next turn needs, compaction loses fidelity, and a per-turn budget can force a load-bearing eviction.</p></div></div><div class="reveal-pager"><button type="button" data-dir="prev" aria-label="Previous reveal page" disabled>&lsaquo; Previous</button><span class="pager-count" aria-live="polite">1 / 4</span><button type="button" data-dir="next" aria-label="Next reveal page">Next &rsaquo;</button></div></div></details></div></div>
+<div class="page page-diagram"><h2>Diagram</h2><div class="diagram"><div class="diagram-zoom"><svg id="d22" width="268.03125" xmlns="http://www.w3.org/2000/svg" class="flowchart" height="461" viewBox="0 0 268.03125 461" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#d22{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#d22 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#d22 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#d22 .error-icon{fill:#552222;}#d22 .error-text{fill:#552222;stroke:#552222;}#d22 .edge-thickness-normal{stroke-width:1px;}#d22 .edge-thickness-thick{stroke-width:3.5px;}#d22 .edge-pattern-solid{stroke-dasharray:0;}#d22 .edge-thickness-invisible{stroke-width:0;fill:none;}#d22 .edge-pattern-dashed{stroke-dasharray:3;}#d22 .edge-pattern-dotted{stroke-dasharray:2;}#d22 .marker{fill:#666;stroke:#666;}#d22 .marker.cross{stroke:#666;}#d22 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#d22 p{margin:0;}#d22 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#d22 .cluster-label text{fill:#333;}#d22 .cluster-label span{color:#333;}#d22 .cluster-label span p{background-color:transparent;}#d22 .label text,#d22 span{fill:#000000;color:#000000;}#d22 .node rect,#d22 .node circle,#d22 .node ellipse,#d22 .node polygon,#d22 .node path{fill:#eee;stroke:#999;stroke-width:1px;}#d22 .rough-node .label text,#d22 .node .label text,#d22 .image-shape .label,#d22 .icon-shape .label{text-anchor:middle;}#d22 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#d22 .rough-node .label,#d22 .node .label,#d22 .image-shape .label,#d22 .icon-shape .label{text-align:center;}#d22 .node.clickable{cursor:pointer;}#d22 .root .anchor path{fill:#666!important;stroke-width:0;stroke:#666;}#d22 .arrowheadPath{fill:#333333;}#d22 .edgePaths .path{stroke:#666;stroke-width:1px;}#d22 .flowchart-link{stroke:#666;fill:none;}#d22 .edgeLabel{background-color:white;text-align:center;}#d22 .edgeLabel p{background-color:white;}#d22 .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#d22 .labelBkg{background-color:rgba(255, 255, 255, 0.5);}#d22 .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#d22 .cluster text{fill:#333;}#d22 .cluster span{color:#333;}#d22 .node .collapsed-indicator{fill:#707070;stroke:none;opacity:0.6;}#d22 .node .collapsed-separator{stroke:#707070;stroke-width:0.75px;}#d22 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid #707070;border-radius:2px;pointer-events:none;z-index:100;}#d22 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#d22 rect.text{fill:none;stroke-width:0;}#d22 .icon-shape,#d22 .image-shape{background-color:white;text-align:center;}#d22 .icon-shape p,#d22 .image-shape p{background-color:white;padding:2px;}#d22 .icon-shape .label rect,#d22 .image-shape .label rect{opacity:0.5;background-color:white;fill:white;}#d22 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#d22 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#d22 .node .neo-node{stroke:#999;}#d22 [data-look="neo"].node rect,#d22 [data-look="neo"].cluster rect,#d22 [data-look="neo"].node polygon{stroke:url(#d22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d22 [data-look="neo"].swimlane.cluster rect{filter:none;}#d22 [data-look="neo"].node path{stroke:url(#d22-gradient);stroke-width:1px;}#d22 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d22 [data-look="neo"].node .neo-line path{stroke:#999;filter:none;}#d22 [data-look="neo"].node circle{stroke:url(#d22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d22 [data-look="neo"].node circle .state-start{fill:#000000;}#d22 [data-look="neo"].icon-shape .icon{fill:url(#d22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d22 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#d22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d22 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="d22_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d22_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d22_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="d22_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="d22_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d22_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="d22_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d22_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="d22_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d22_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="d22_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="d22_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edgePaths"><path d="M134.016,57L134.016,61.167C134.016,65.333,134.016,73.667,134.016,81.333C134.016,89,134.016,96,134.016,99.5L134.016,103" id="d22-L_a_b_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_a_b_0" data-points="W3sieCI6MTM0LjAxNTYyNSwieSI6NTd9LHsieCI6MTM0LjAxNTYyNSwieSI6ODJ9LHsieCI6MTM0LjAxNTYyNSwieSI6MTA3fV0=" data-look="classic" marker-end="url(#d22_flowchart-v2-pointEnd)"></path><path d="M134.016,156L134.016,160.167C134.016,164.333,134.016,172.667,134.016,180.333C134.016,188,134.016,195,134.016,198.5L134.016,202" id="d22-L_b_c_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_b_c_0" data-points="W3sieCI6MTM0LjAxNTYyNSwieSI6MTU2fSx7IngiOjEzNC4wMTU2MjUsInkiOjE4MX0seyJ4IjoxMzQuMDE1NjI1LCJ5IjoyMDZ9XQ==" data-look="classic" marker-end="url(#d22_flowchart-v2-pointEnd)"></path><path d="M134.016,255L134.016,259.167C134.016,263.333,134.016,271.667,134.016,279.333C134.016,287,134.016,294,134.016,297.5L134.016,301" id="d22-L_c_d_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_c_d_0" data-points="W3sieCI6MTM0LjAxNTYyNSwieSI6MjU1fSx7IngiOjEzNC4wMTU2MjUsInkiOjI4MH0seyJ4IjoxMzQuMDE1NjI1LCJ5IjozMDV9XQ==" data-look="classic" marker-end="url(#d22_flowchart-v2-pointEnd)"></path><path d="M134.016,354L134.016,358.167C134.016,362.333,134.016,370.667,134.016,378.333C134.016,386,134.016,393,134.016,396.5L134.016,400" id="d22-L_d_e_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_d_e_0" data-points="W3sieCI6MTM0LjAxNTYyNSwieSI6MzU0fSx7IngiOjEzNC4wMTU2MjUsInkiOjM3OX0seyJ4IjoxMzQuMDE1NjI1LCJ5Ijo0MDR9XQ==" data-look="classic" marker-end="url(#d22_flowchart-v2-pointEnd)"></path></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_a_b_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_b_c_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_c_d_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="L_d_e_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g></g><g class="nodes"><g class="node default" id="d22-flowchart-a-0" data-look="classic" transform="translate(134.015625, 32.5)"><rect class="basic label-container" style="" x="-109.5390625" y="-24.5" width="219.078125" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Stable</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> prefix</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> about</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 4k</tspan></tspan></text></g></g></g><g class="node default" id="d22-flowchart-b-1" data-look="classic" transform="translate(134.015625, 131.5)"><rect class="basic label-container" style="" x="-110.5859375" y="-24.5" width="221.171875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Per-turn</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> retrieval</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 2-4k</tspan></tspan></text></g></g></g><g class="node default" id="d22-flowchart-c-3" data-look="classic" transform="translate(134.015625, 230.5)"><rect class="basic label-container" style="" x="-112.34375" y="-24.5" width="224.6875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Tool</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> excerpt</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> about</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 500</tspan></tspan></text></g></g></g><g class="node default" id="d22-flowchart-d-5" data-look="classic" transform="translate(134.015625, 329.5)"><rect class="basic label-container" style="" x="-126.015625" y="-24.5" width="252.03125" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Summary</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> plus</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> recent</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> turns</tspan></tspan></text></g></g></g><g class="node default" id="d22-flowchart-e-7" data-look="classic" transform="translate(134.015625, 428.5)"><rect class="basic label-container" style="" x="-104.4375" y="-24.5" width="208.875" height="49"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Window</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> stays</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 10-12k</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="d22-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><defs><filter id="d22-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><linearGradient id="d22-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"></stop></linearGradient></svg></div></div><div class="diagram-hint">drag to pan · scroll to zoom · double-click to reset</div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div>The domain spine, made concrete. A research agent runs a three-hour session over a corpus. Here&#x27;s what actually accumulates, and how a designed context budget handles it:</div><div><strong>Stable prefix (~4k tokens):</strong> system instructions (&quot;cite every claim; if evidence is absent, say so&quot;), tool definitions, output format. <em>Cacheable — sent once, reused all session.</em>[adk-context-caching](#adk-context-caching), [anthropic-prompt-caching](#anthropic-prompt-caching)</div></div></div>
+<div class="page"><h2>Source audit (cont. 2/5)</h2><div class="source"><div><strong>Per-turn retrieval (~2–4k):</strong> the top chunks for <em>this</em> question. <em>Fresh each turn; evicted after use.</em></div><div><strong>Tool results (variable):</strong> a <code>fetch_paper</code> tool returns 8k tokens of full text; the harness keeps the abstract + relevant excerpt (~500 tokens) and stores the full text as an artifact. <em>Verbose output truncated at the seam.</em>[gan-rag-mcp](#gan-rag-mcp), [ding-mcp-performance](#ding-mcp-performance)</div></div></div>
+<div class="page"><h2>Source audit (cont. 3/5)</h2><div class="source"><div><strong>Conversation history:</strong> compacted every ~6 turns into a running research-progress summary; the last 4 turns kept verbatim. <em>History costs stay flat instead of growing linearly.</em>[adk-context-compaction](#adk-context-compaction)</div><div><strong>Scratchpad:</strong> the agent&#x27;s intermediate reasoning, <em>not</em> persisted into the window across turns — kept in working memory (M7) or regenerated when needed.</div></div></div>
+<div class="page"><h2>Source audit (cont. 4/5)</h2><div class="source"><div>The result: at hour three, the window is ~10–12k tokens — not 90k — the current question sits at the end (recency), the policy sits at the start (primacy), and the three-hours-ago question is answered just as well as it was in minute one.[shaier-context-before-question](#shaier-context-before-question), [hsieh-ruler](#hsieh-ruler) <strong>The agent didn&#x27;t get dumber, because the window never got fat.</strong>[hsieh-ruler](#hsieh-ruler)</div></div></div>
+<div class="page"><h2>Source audit (cont. 5/5)</h2><div class="source"><div><strong>Tradeoff (the ledger entry):</strong> every budget mechanism costs <em>something</em>. Truncating tool output can drop a detail the next turn needs.[unsupported](#unsupported) Compacting history loses fidelity.[adk-context-compaction](#adk-context-compaction), [liu-lost-in-the-middle](#liu-lost-in-the-middle) A per-turn budget can force an eviction that was load-bearing. The discipline is not &quot;keep the window small&quot;; it is <strong>&quot;make each eviction and each compaction a named decision, with its cost written down&quot;</strong> — because the failure you&#x27;re preventing (attention collapse, cost blowup) is invisible until it&#x27;s catastrophic,[anthropic-prompting-best-practices](#anthropic-prompting-best-practices) while the failure you&#x27;re causing (a dropped detail) is visible only much later, if ever.[unsupported](#unsupported)</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>Worked example: the research agent, budgeted</h1><div class="muted">— end of leaf —</div><div class="anchor">README.md:587</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--worked-example-the-research-agent-budgeted">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>

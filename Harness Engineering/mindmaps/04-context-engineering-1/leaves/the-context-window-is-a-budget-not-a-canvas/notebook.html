@@ -1,0 +1,232 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>The context window is a budget, not a canvas — Revision Atlas notebook</title>
+<link rel="stylesheet" href="../../../assets/page-flip.css?v=f29e8b26" />
+<link rel="stylesheet" href="../../../assets/notebook.css?v=f29e8b26" />
+</head>
+<body>
+<div class="stage">
+  <div class="book" id="book">
+<div class="page page-cover" data-density="hard"><a class="cover-nav" href="../../../index.html#04-context-engineering-1--the-context-window-is-a-budget-not-a-canvas">&larr; course map</a><div class="cover-body"><h1>The context window is a budget, not a canvas</h1><div class="muted">revision leaf · section</div><div class="anchor">README.md:72</div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><p>Every model call carries three costs, and beginners track only one.</p></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><div class="reveal-body table-reveal" style="--reveal-lines:13"><div class="reveal-sheet table-sheet"><div class="reveal-page table-page"><div class="scroll-wrap" data-scroll data-table-narrative="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:13"><table class="narrative-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Token cost</strong></td><td>You pay for every input token, every turn, at your input price</td><td>Linear cost blowup as sessions grow[fu-long-context-deployment](#fu-long-context-deployment)</td></tr></tbody></table></div></div></div><div class="reveal-page table-page" hidden><div class="scroll-wrap" data-scroll data-table-narrative="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:13"><table class="narrative-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Attention cost</strong></td><td>The model&#x27;s attention is finite and <em>positional</em>; more context dilutes it</td><td>Correctness falls, especially for facts in the middle[liu-lost-in-the-middle](#liu-lost-in-the-middle)</td></tr></tbody></table></div></div></div><div class="reveal-page table-page" hidden><div class="scroll-wrap" data-scroll data-table-narrative="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:13"><table class="narrative-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Format cost</strong></td><td>Asking for a <em>shape</em> (JSON, XML, LaTeX, Markdown) taxes the capability you asked for — <em>on top of</em> the token (since formatting instructions will be represented as tokens) and attention cost (since formatting instructions will compete with other tokens to occupy context window) those instructions already incur</td><td>Accuracy drops on the same task, with the same content[lee-format-tax](#lee-format-tax)</td></tr></tbody></table></div></div></div></div><div class="reveal-pager"><button type="button" data-dir="prev" aria-label="Previous table page" disabled>&lsaquo; Previous</button><span class="pager-count" aria-live="polite">1 / 3</span><button type="button" data-dir="next" aria-label="Next table page">Next &rsaquo;</button></div></div></div></div></div></div>
+<div class="page"><div class="scroll-wrap" data-scroll><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:16"><div class="narrative"><ul class="narrative-list"><li>Money is the first.</li><li>The second concerns quality, and it is what produces the &#x27;model got dumber&#x27; misdiagnosis.</li><li>You have met this failure class: M2&#x27;s position bias (lost in the middle) and instruction drift, where policy is drowned by later text.</li><li>Both are context-assembly failures, and both are yours to design away.</li><li>The third goes unbudgeted because it resembles a rendering detail.</li></ul></div></div></div></div>
+<div class="page page-selftest"><h2>Self-test</h2><div class="selftest-body"><p>Every model call carries three costs and beginners track one. Name all three with the failure each produces, and explain why format cost is not already covered by the other two.</p><details class="reveal-disclosure"><summary>Reveal answer</summary><div class="reveal-body"><div class="reveal-sheet"><div class="reveal-page"><p>Token cost — you pay for every input token, every turn, at your input price; ignore it and cost blows up linearly as sessions grow. Attention cost — the model&#x27;s attention is finite and positional, so more context dilutes it; ignore it and correctness falls, especially for facts in the middle (position bias, lost-in-the-middle) and for policy drowned by later text (instruction drift). This is the cost that produces the &#x27;the model got dumber&#x27; misdiagnosis, and both of its failure modes are context-assembly failures, which makes them yours to design away. Format cost — asking for a shape (JSON, XML, LaTeX, Markdown) taxes the capability you asked for, so accuracy drops on the same task with the same content. It is additive to the other two, not reducible to them: the formatting instruction is itself tokens, so it carries token cost, and it competes with other tokens, so it carries attention cost — and on top of both it degrades the work. That is why it goes unbudgeted: it looks like a rendering detail. The framing the section title carries: the window is a budget to spend, not a canvas to fill.</p></div></div></div></details></div></div>
+<div class="page page-diagram"><h2>Diagram</h2><div class="diagram"><div class="diagram-zoom"><svg id="d2" width="100%" xmlns="http://www.w3.org/2000/svg" class="mindmapDiagram" style="max-width: 401.29241943359375px;" viewBox="16.34765625 5 401.29241943359375 235.26998901367188" role="graphics-document document" aria-roledescription="mindmap"><style>#d2{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#d2 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#d2 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#d2 .error-icon{fill:#552222;}#d2 .error-text{fill:#552222;stroke:#552222;}#d2 .edge-thickness-normal{stroke-width:1px;}#d2 .edge-thickness-thick{stroke-width:3.5px;}#d2 .edge-pattern-solid{stroke-dasharray:0;}#d2 .edge-thickness-invisible{stroke-width:0;fill:none;}#d2 .edge-pattern-dashed{stroke-dasharray:3;}#d2 .edge-pattern-dotted{stroke-dasharray:2;}#d2 .marker{fill:#666;stroke:#666;}#d2 .marker.cross{stroke:#666;}#d2 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#d2 p{margin:0;}#d2 .edge{stroke-width:3;}#d2 .section--1 rect,#d2 .section--1 path,#d2 .section--1 circle,#d2 .section--1 polygon,#d2 .section--1 path{fill:#555;}#d2 .section--1 text{fill:#F4F4F4;}#d2 .section--1 span{color:#F4F4F4;}#d2 .node-icon--1{font-size:40px;color:#F4F4F4;}#d2 .section-edge--1{stroke:#555;}#d2 .edge-depth--1{stroke-width:17;}#d2 .section--1 line{stroke:#aaaaaa;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section--1 rect,#d2 [data-look="neo"].mindmap-node.section--1 path,#d2 [data-look="neo"].mindmap-node.section--1 circle,#d2 [data-look="neo"].mindmap-node.section--1 polygon{fill:#eee;stroke:#555;stroke-width:1px;}#d2 [data-look="neo"].section-edge--1{stroke:#555;}#d2 [data-look="neo"].mindmap-node.section--1 text{fill:#333;}#d2 .section-0 rect,#d2 .section-0 path,#d2 .section-0 circle,#d2 .section-0 polygon,#d2 .section-0 path{fill:#F4F4F4;}#d2 .section-0 text{fill:#333;}#d2 .section-0 span{color:#333;}#d2 .node-icon-0{font-size:40px;color:#333;}#d2 .section-edge-0{stroke:#F4F4F4;}#d2 .edge-depth-0{stroke-width:14;}#d2 .section-0 line{stroke:#0b0b0b;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-0 rect,#d2 [data-look="neo"].mindmap-node.section-0 path,#d2 [data-look="neo"].mindmap-node.section-0 circle,#d2 [data-look="neo"].mindmap-node.section-0 polygon{fill:#eee;stroke:#F4F4F4;stroke-width:1px;}#d2 [data-look="neo"].section-edge-0{stroke:#F4F4F4;}#d2 [data-look="neo"].mindmap-node.section-0 text{fill:#333;}#d2 .section-1 rect,#d2 .section-1 path,#d2 .section-1 circle,#d2 .section-1 polygon,#d2 .section-1 path{fill:#555;}#d2 .section-1 text{fill:#F4F4F4;}#d2 .section-1 span{color:#F4F4F4;}#d2 .node-icon-1{font-size:40px;color:#F4F4F4;}#d2 .section-edge-1{stroke:#555;}#d2 .edge-depth-1{stroke-width:11;}#d2 .section-1 line{stroke:#aaaaaa;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-1 rect,#d2 [data-look="neo"].mindmap-node.section-1 path,#d2 [data-look="neo"].mindmap-node.section-1 circle,#d2 [data-look="neo"].mindmap-node.section-1 polygon{fill:#eee;stroke:#555;stroke-width:1px;}#d2 [data-look="neo"].section-edge-1{stroke:#555;}#d2 [data-look="neo"].mindmap-node.section-1 text{fill:#333;}#d2 .section-2 rect,#d2 .section-2 path,#d2 .section-2 circle,#d2 .section-2 polygon,#d2 .section-2 path{fill:#BBB;}#d2 .section-2 text{fill:#333;}#d2 .section-2 span{color:#333;}#d2 .node-icon-2{font-size:40px;color:#333;}#d2 .section-edge-2{stroke:#BBB;}#d2 .edge-depth-2{stroke-width:8;}#d2 .section-2 line{stroke:#444444;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-2 rect,#d2 [data-look="neo"].mindmap-node.section-2 path,#d2 [data-look="neo"].mindmap-node.section-2 circle,#d2 [data-look="neo"].mindmap-node.section-2 polygon{fill:#eee;stroke:#BBB;stroke-width:1px;}#d2 [data-look="neo"].section-edge-2{stroke:#BBB;}#d2 [data-look="neo"].mindmap-node.section-2 text{fill:#333;}#d2 .section-3 rect,#d2 .section-3 path,#d2 .section-3 circle,#d2 .section-3 polygon,#d2 .section-3 path{fill:#777;}#d2 .section-3 text{fill:#333;}#d2 .section-3 span{color:#333;}#d2 .node-icon-3{font-size:40px;color:#333;}#d2 .section-edge-3{stroke:#777;}#d2 .edge-depth-3{stroke-width:5;}#d2 .section-3 line{stroke:#888888;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-3 rect,#d2 [data-look="neo"].mindmap-node.section-3 path,#d2 [data-look="neo"].mindmap-node.section-3 circle,#d2 [data-look="neo"].mindmap-node.section-3 polygon{fill:#eee;stroke:#777;stroke-width:1px;}#d2 [data-look="neo"].section-edge-3{stroke:#777;}#d2 [data-look="neo"].mindmap-node.section-3 text{fill:#333;}#d2 .section-4 rect,#d2 .section-4 path,#d2 .section-4 circle,#d2 .section-4 polygon,#d2 .section-4 path{fill:#999;}#d2 .section-4 text{fill:#333;}#d2 .section-4 span{color:#333;}#d2 .node-icon-4{font-size:40px;color:#333;}#d2 .section-edge-4{stroke:#999;}#d2 .edge-depth-4{stroke-width:2;}#d2 .section-4 line{stroke:#666666;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-4 rect,#d2 [data-look="neo"].mindmap-node.section-4 path,#d2 [data-look="neo"].mindmap-node.section-4 circle,#d2 [data-look="neo"].mindmap-node.section-4 polygon{fill:#eee;stroke:#999;stroke-width:1px;}#d2 [data-look="neo"].section-edge-4{stroke:#999;}#d2 [data-look="neo"].mindmap-node.section-4 text{fill:#333;}#d2 .section-5 rect,#d2 .section-5 path,#d2 .section-5 circle,#d2 .section-5 polygon,#d2 .section-5 path{fill:#DDD;}#d2 .section-5 text{fill:#333;}#d2 .section-5 span{color:#333;}#d2 .node-icon-5{font-size:40px;color:#333;}#d2 .section-edge-5{stroke:#DDD;}#d2 .edge-depth-5{stroke-width:-1;}#d2 .section-5 line{stroke:#222222;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-5 rect,#d2 [data-look="neo"].mindmap-node.section-5 path,#d2 [data-look="neo"].mindmap-node.section-5 circle,#d2 [data-look="neo"].mindmap-node.section-5 polygon{fill:#eee;stroke:#DDD;stroke-width:1px;}#d2 [data-look="neo"].section-edge-5{stroke:#DDD;}#d2 [data-look="neo"].mindmap-node.section-5 text{fill:#333;}#d2 .section-6 rect,#d2 .section-6 path,#d2 .section-6 circle,#d2 .section-6 polygon,#d2 .section-6 path{fill:#FFF;}#d2 .section-6 text{fill:#333;}#d2 .section-6 span{color:#333;}#d2 .node-icon-6{font-size:40px;color:#333;}#d2 .section-edge-6{stroke:#FFF;}#d2 .edge-depth-6{stroke-width:-4;}#d2 .section-6 line{stroke:#000000;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-6 rect,#d2 [data-look="neo"].mindmap-node.section-6 path,#d2 [data-look="neo"].mindmap-node.section-6 circle,#d2 [data-look="neo"].mindmap-node.section-6 polygon{fill:#eee;stroke:#FFF;stroke-width:1px;}#d2 [data-look="neo"].section-edge-6{stroke:#FFF;}#d2 [data-look="neo"].mindmap-node.section-6 text{fill:#333;}#d2 .section-7 rect,#d2 .section-7 path,#d2 .section-7 circle,#d2 .section-7 polygon,#d2 .section-7 path{fill:#DDD;}#d2 .section-7 text{fill:#333;}#d2 .section-7 span{color:#333;}#d2 .node-icon-7{font-size:40px;color:#333;}#d2 .section-edge-7{stroke:#DDD;}#d2 .edge-depth-7{stroke-width:-7;}#d2 .section-7 line{stroke:#222222;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-7 rect,#d2 [data-look="neo"].mindmap-node.section-7 path,#d2 [data-look="neo"].mindmap-node.section-7 circle,#d2 [data-look="neo"].mindmap-node.section-7 polygon{fill:#eee;stroke:#DDD;stroke-width:1px;}#d2 [data-look="neo"].section-edge-7{stroke:#DDD;}#d2 [data-look="neo"].mindmap-node.section-7 text{fill:#333;}#d2 .section-8 rect,#d2 .section-8 path,#d2 .section-8 circle,#d2 .section-8 polygon,#d2 .section-8 path{fill:#BBB;}#d2 .section-8 text{fill:#333;}#d2 .section-8 span{color:#333;}#d2 .node-icon-8{font-size:40px;color:#333;}#d2 .section-edge-8{stroke:#BBB;}#d2 .edge-depth-8{stroke-width:-10;}#d2 .section-8 line{stroke:#444444;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-8 rect,#d2 [data-look="neo"].mindmap-node.section-8 path,#d2 [data-look="neo"].mindmap-node.section-8 circle,#d2 [data-look="neo"].mindmap-node.section-8 polygon{fill:#eee;stroke:#BBB;stroke-width:1px;}#d2 [data-look="neo"].section-edge-8{stroke:#BBB;}#d2 [data-look="neo"].mindmap-node.section-8 text{fill:#333;}#d2 .section-9 rect,#d2 .section-9 path,#d2 .section-9 circle,#d2 .section-9 polygon,#d2 .section-9 path{fill:#999;}#d2 .section-9 text{fill:#333;}#d2 .section-9 span{color:#333;}#d2 .node-icon-9{font-size:40px;color:#333;}#d2 .section-edge-9{stroke:#999;}#d2 .edge-depth-9{stroke-width:-13;}#d2 .section-9 line{stroke:#666666;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-9 rect,#d2 [data-look="neo"].mindmap-node.section-9 path,#d2 [data-look="neo"].mindmap-node.section-9 circle,#d2 [data-look="neo"].mindmap-node.section-9 polygon{fill:#eee;stroke:#999;stroke-width:1px;}#d2 [data-look="neo"].section-edge-9{stroke:#999;}#d2 [data-look="neo"].mindmap-node.section-9 text{fill:#333;}#d2 .section-10 rect,#d2 .section-10 path,#d2 .section-10 circle,#d2 .section-10 polygon,#d2 .section-10 path{fill:#777;}#d2 .section-10 text{fill:#333;}#d2 .section-10 span{color:#333;}#d2 .node-icon-10{font-size:40px;color:#333;}#d2 .section-edge-10{stroke:#777;}#d2 .edge-depth-10{stroke-width:-16;}#d2 .section-10 line{stroke:#888888;stroke-width:3;}#d2 .disabled,#d2 .disabled circle,#d2 .disabled text{fill:lightgray;}#d2 .disabled text{fill:#efefef;}#d2 [data-look="neo"].mindmap-node.section-10 rect,#d2 [data-look="neo"].mindmap-node.section-10 path,#d2 [data-look="neo"].mindmap-node.section-10 circle,#d2 [data-look="neo"].mindmap-node.section-10 polygon{fill:#eee;stroke:#777;stroke-width:1px;}#d2 [data-look="neo"].section-edge-10{stroke:#777;}#d2 [data-look="neo"].mindmap-node.section-10 text{fill:#333;}#d2 .section-root rect,#d2 .section-root path,#d2 .section-root circle,#d2 .section-root polygon{fill:hsl(0, 0%, 70.6862745098%);}#d2 .section-root text{fill:#333;}#d2 .section-root span{color:#333;}#d2 .icon-container{height:100%;display:flex;justify-content:center;align-items:center;}#d2 .edge{fill:none;}#d2 .mindmap-node-label{dy:1em;alignment-baseline:middle;text-anchor:middle;dominant-baseline:middle;text-align:center;}#d2 [data-look="neo"].mindmap-node{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 [data-look="neo"].mindmap-node.section-root rect,#d2 [data-look="neo"].mindmap-node.section-root path,#d2 [data-look="neo"].mindmap-node.section-root circle,#d2 [data-look="neo"].mindmap-node.section-root polygon{fill:hsl(0, 0%, 70.6862745098%);}#d2 [data-look="neo"].mindmap-node.section-root .text-inner-tspan{fill:#333;}#d2 [data-look="neo"].mindmap-node.section--1 rect,#d2 [data-look="neo"].mindmap-node.section--1 path,#d2 [data-look="neo"].mindmap-node.section--1 circle,#d2 [data-look="neo"].mindmap-node.section--1 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section--1 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-0 rect,#d2 [data-look="neo"].mindmap-node.section-0 path,#d2 [data-look="neo"].mindmap-node.section-0 circle,#d2 [data-look="neo"].mindmap-node.section-0 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-0 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-1 rect,#d2 [data-look="neo"].mindmap-node.section-1 path,#d2 [data-look="neo"].mindmap-node.section-1 circle,#d2 [data-look="neo"].mindmap-node.section-1 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-1 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-2 rect,#d2 [data-look="neo"].mindmap-node.section-2 path,#d2 [data-look="neo"].mindmap-node.section-2 circle,#d2 [data-look="neo"].mindmap-node.section-2 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-2 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-3 rect,#d2 [data-look="neo"].mindmap-node.section-3 path,#d2 [data-look="neo"].mindmap-node.section-3 circle,#d2 [data-look="neo"].mindmap-node.section-3 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-3 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-4 rect,#d2 [data-look="neo"].mindmap-node.section-4 path,#d2 [data-look="neo"].mindmap-node.section-4 circle,#d2 [data-look="neo"].mindmap-node.section-4 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-4 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-5 rect,#d2 [data-look="neo"].mindmap-node.section-5 path,#d2 [data-look="neo"].mindmap-node.section-5 circle,#d2 [data-look="neo"].mindmap-node.section-5 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-5 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-6 rect,#d2 [data-look="neo"].mindmap-node.section-6 path,#d2 [data-look="neo"].mindmap-node.section-6 circle,#d2 [data-look="neo"].mindmap-node.section-6 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-6 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-7 rect,#d2 [data-look="neo"].mindmap-node.section-7 path,#d2 [data-look="neo"].mindmap-node.section-7 circle,#d2 [data-look="neo"].mindmap-node.section-7 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-7 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-8 rect,#d2 [data-look="neo"].mindmap-node.section-8 path,#d2 [data-look="neo"].mindmap-node.section-8 circle,#d2 [data-look="neo"].mindmap-node.section-8 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-8 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-9 rect,#d2 [data-look="neo"].mindmap-node.section-9 path,#d2 [data-look="neo"].mindmap-node.section-9 circle,#d2 [data-look="neo"].mindmap-node.section-9 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-9 line{stroke-width:0;}#d2 [data-look="neo"].mindmap-node.section-10 rect,#d2 [data-look="neo"].mindmap-node.section-10 path,#d2 [data-look="neo"].mindmap-node.section-10 circle,#d2 [data-look="neo"].mindmap-node.section-10 polygon{stroke:url(#d2-gradient);fill:#eee;}#d2 .section-10 line{stroke-width:0;}#d2 .node .neo-node{stroke:#999;}#d2 [data-look="neo"].node rect,#d2 [data-look="neo"].cluster rect,#d2 [data-look="neo"].node polygon{stroke:url(#d2-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 [data-look="neo"].swimlane.cluster rect{filter:none;}#d2 [data-look="neo"].node path{stroke:url(#d2-gradient);stroke-width:1px;}#d2 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 [data-look="neo"].node .neo-line path{stroke:#999;filter:none;}#d2 [data-look="neo"].node circle{stroke:url(#d2-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 [data-look="neo"].node circle .state-start{fill:#000000;}#d2 [data-look="neo"].icon-shape .icon{fill:url(#d2-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#d2-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#d2 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="d2_mindmap-pointEnd" class="marker mindmap" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d2_mindmap-pointStart" class="marker mindmap" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="d2_mindmap-pointEnd-margin" class="marker mindmap" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="d2_mindmap-pointStart-margin" class="marker mindmap" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><g class="subgraphs"></g><g class="edgePaths"><path d="M155.24,117.488L168.734,115.799C182.229,114.11,209.219,110.731,236.209,107.353C263.199,103.974,290.188,100.595,303.683,98.906L317.178,97.217" id="d2-edge_0_1" class="edge-thickness-normal edge-pattern-solid edge section-edge-0 edge-depth-1" style="undefined;;;undefined" data-edge="true" data-et="edge" data-id="edge_0_1" data-points="W3sieCI6MTU1LjIzOTUyNTAzNTU2MTk3LCJ5IjoxMTcuNDg4MzgwMDkyNjY2ODR9LHsieCI6MjM2LjIwODgxOTc4NDQ4ODkyLCJ5IjoxMDcuMzUyNTg3NTc4ODEyNTJ9LHsieCI6MzE3LjE3ODExNDUzMzQxNTg1LCJ5Ijo5Ny4yMTY3OTUwNjQ5NTgxOX1d" data-look="classic"></path><path d="M137.153,134.006L136.022,139.182C134.891,144.357,132.628,154.709,130.366,165.061C128.104,175.412,125.842,185.764,124.71,190.94L123.579,196.116" id="d2-edge_0_2" class="edge-thickness-normal edge-pattern-solid edge section-edge-1 edge-depth-1" style="undefined;;;undefined" data-edge="true" data-et="edge" data-id="edge_0_2" data-points="W3sieCI6MTM3LjE1MzA5OTAzOTQxMzA2LCJ5IjoxMzQuMDA1Njc1NjE1NzQ2NTV9LHsieCI6MTMwLjM2NjE1NzA5NDYzNDQ1LCJ5IjoxNjUuMDYwNzY5ODAzMTA4NTR9LHsieCI6MTIzLjU3OTIxNTE0OTg1NTgzLCJ5IjoxOTYuMTE1ODYzOTkwNDcwNTN9XQ==" data-look="classic"></path><path d="M132.594,106.516L129.611,101.584C126.629,96.653,120.664,86.789,114.699,76.926C108.735,67.062,102.77,57.199,99.787,52.267L96.805,47.336" id="d2-edge_0_3" class="edge-thickness-normal edge-pattern-solid edge section-edge-2 edge-depth-1" style="undefined;;;undefined" data-edge="true" data-et="edge" data-id="edge_0_3" data-points="W3sieCI6MTMyLjU5MzYwODA4NTYwMzY1LCJ5IjoxMDYuNTE2MDQ3MDU1MDAxOTZ9LHsieCI6MTE0LjY5OTMyODQzODAyODcyLCJ5Ijo3Ni45MjU3NzQ1NjM2MDM2OH0seyJ4Ijo5Ni44MDUwNDg3OTA0NTM3OCwieSI6NDcuMzM1NTAyMDcyMjA1NH1d" data-look="classic"></path></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="edge_0_1" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="edge_0_2" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g><g class="edgeLabel"><g class="label" data-id="edge_0_3" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"></tspan></text></g></g><g><rect class="background" style="stroke: none"></rect></g></g><g class="nodes"><g class="node mindmap-node section-root section--1" id="d2-node_0" data-look="classic" transform="translate(140.35568812605743, 119.35154912720736)"><rect class="basic label-container" style="" x="-61.1640625" y="-19.5" width="122.328125" height="39"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Three</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> costs</tspan></tspan></text></g></g></g><g class="node mindmap-node section-0" id="d2-node_1" data-look="classic" transform="translate(332.0619514429204, 95.35362603041767)"><rect class="basic label-container" style="" x="-57.7890625" y="-19.5" width="115.578125" height="39"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Token</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> cost</tspan></tspan></text></g></g></g><g class="node mindmap-node section-1" id="d2-node_2" data-look="classic" transform="translate(120.37662606321146, 210.76999047900972)"><rect class="basic label-container" style="" x="-70.9921875" y="-19.5" width="141.984375" height="39"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Attention</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> cost</tspan></tspan></text></g></g></g><g class="node mindmap-node section-2" id="d2-node_3" data-look="classic" transform="translate(89.04296875, 34.5)"><rect class="basic label-container" style="" x="-62.6953125" y="-19.5" width="125.390625" height="39"></rect><g class="label" style="" transform="translate(0, -9.5)"><rect></rect><g><rect class="background" style="stroke: none"></rect><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">Format</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> cost</tspan></tspan></text></g></g></g></g></g><defs><filter id="d2-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><defs><filter id="d2-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></feDropShadow></filter></defs><linearGradient id="d2-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"></stop></linearGradient><defs><linearGradient id="d2-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"></stop><stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"></stop></linearGradient></defs></svg></div></div><div class="diagram-hint">drag to pan · scroll to zoom · double-click to reset</div></div>
+<div class="page"><h2>Source audit</h2><div class="source"><div>Every model call carries <strong>three</strong> costs, and beginners track only one:</div></div></div>
+<div class="page"><h2>Source audit (cont. 2/4)</h2><div class="source"><div class="reveal-body table-reveal" style="--reveal-lines:11"><div class="reveal-sheet table-sheet"><div class="reveal-page table-page"><div class="scroll-wrap" data-scroll data-table-audit="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:11"><table class="src-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Token cost</strong></td><td>You pay for every input token, every turn, at your input price</td><td>Linear cost blowup as sessions grow[fu-long-context-deployment](#fu-long-context-deployment)</td></tr></tbody></table></div></div></div><div class="reveal-page table-page" hidden><div class="scroll-wrap" data-scroll data-table-audit="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:11"><table class="src-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Attention cost</strong></td><td>The model&#x27;s attention is finite and <em>positional</em>; more context dilutes it</td><td>Correctness falls, especially for facts in the middle[liu-lost-in-the-middle](#liu-lost-in-the-middle)</td></tr></tbody></table></div></div></div><div class="reveal-page table-page" hidden><div class="scroll-wrap" data-scroll data-table-audit="1"><div class="scroll-fade fade-up"></div><div class="scroll-fade fade-down"></div><div class="scroll-fade fade-left"></div><div class="scroll-fade fade-right"></div><div class="scroll-box" style="--scroll-lines:11"><table class="src-table"><thead><tr><th>Cost</th><th>What it is</th><th>Consequence of ignoring it</th></tr></thead><tbody><tr><td><strong>Format cost</strong></td><td>Asking for a <em>shape</em> (JSON, XML, LaTeX, Markdown) taxes the capability you asked for — <em>on top of</em> the token (since formatting instructions will be represented as tokens) and attention cost (since formatting instructions will compete with other tokens to occupy context window) those instructions already incur</td><td>Accuracy drops on the same task, with the same content[lee-format-tax](#lee-format-tax)</td></tr></tbody></table></div></div></div></div><div class="reveal-pager"><button type="button" data-dir="prev" aria-label="Previous table page" disabled>&lsaquo; Previous</button><span class="pager-count" aria-live="polite">1 / 3</span><button type="button" data-dir="next" aria-label="Next table page">Next &rsaquo;</button></div></div></div></div>
+<div class="page"><h2>Source audit (cont. 3/4)</h2><div class="source"><div>The first is money.</div><div>The second is <em>quality</em> — and it&#x27;s the one that causes the &quot;the model got dumber&quot; misdiagnosis.</div><div>You have seen this failure class already: it is M2&#x27;s <strong>position bias</strong> (&quot;lost in the middle&quot;)[liu-lost-in-the-middle](#liu-lost-in-the-middle) and <strong>instruction drift</strong> (policy drowned by later text).[wallace-instruction-hierarchy](#wallace-instruction-hierarchy), [geng-control-illusion](#geng-control-illusion)</div></div></div>
+<div class="page"><h2>Source audit (cont. 4/4)</h2><div class="source"><div>Both are <em>context-assembly</em> failures, and both are yours to design away.</div><div>The third is the one nobody budgets for, because it looks like a rendering detail.</div></div></div>
+<div class="page page-cover" data-density="hard"><div class="cover-body"><h1>The context window is a budget, not a canvas</h1><div class="muted">— end of leaf —</div><div class="anchor">README.md:72</div></div><a class="cover-nav back" href="../../../index.html#04-context-engineering-1--the-context-window-is-a-budget-not-a-canvas">&larr; course map</a></div>
+  </div>
+  <button class="turn turn-prev" id="prevZone" type="button" aria-label="Previous page"></button>
+  <button class="turn turn-next" id="nextZone" type="button" aria-label="Next page"></button>
+</div>
+<script src="../../../assets/page-flip.browser.js?v=f29e8b26"></script>
+<script>
+(() => {
+  const el = document.getElementById('book');
+  const stage = document.querySelector('.stage');
+  const prevZone = document.getElementById('prevZone');
+  const nextZone = document.getElementById('nextZone');
+
+  // --- size the page to the window ----------------------------------------
+  // A notebook page keeps a paper's aspect; fit it to whatever window the reader
+  // actually has, so the book never overflows and content is never clipped. The
+  // ruling's geometry is all ratios of --page-w / --page-h, so it scales with it.
+  const RATIO = 520 / 680;
+  // --- pan and zoom a diagram inside its page ---------------------------------
+  // A dense flowchart is unreadable fitted to a 520px page and there was no way to
+  // enlarge it. One transform on an inner wrapper: drag pans, the wheel zooms about
+  // the cursor, a double-click returns to the fitted view. The turn squares are the
+  // page's top corners and pointer events here never reach them, so a drag cannot
+  // turn the book.
+  for (const dg of el.querySelectorAll('.diagram')) {
+    const inner = dg.querySelector('.diagram-zoom');
+    if (!inner) continue;
+    const MIN = 0.6, MAX = 6;
+    let s = 1, tx = 0, ty = 0, drag = null;
+    const apply = () => { inner.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; };
+    const reset = () => { s = 1; tx = 0; ty = 0; apply(); };
+    const capture = (id, on) => {
+      try { on ? dg.setPointerCapture(id) : dg.releasePointerCapture(id); } catch (e) { /* not an active pointer */ }
+    };
+    dg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX - tx, y: e.clientY - ty };
+      capture(e.pointerId, true);
+      dg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    dg.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    });
+    const stop = (e) => {
+      if (!drag) return;
+      drag = null; dg.classList.remove('is-panning'); capture(e.pointerId, false);
+    };
+    dg.addEventListener('pointerup', stop);
+    dg.addEventListener('pointercancel', stop);
+    dg.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = dg.getBoundingClientRect();
+      const next = Math.min(MAX, Math.max(MIN, s * Math.exp(-e.deltaY * 0.0015)));
+      const f = next / s;
+      // keep whatever is under the cursor under the cursor
+      const cx = e.clientX - r.left - r.width / 2 - tx;
+      const cy = e.clientY - r.top - r.height / 2 - ty;
+      tx -= cx * (f - 1); ty -= cy * (f - 1);
+      s = next; apply();
+    }, { passive: false });
+    dg.addEventListener('dblclick', reset);
+    reset();
+  }
+
+  // --- the nested reveal: swap pages, conserve every answer -------------------
+  // The pager sits at the BOTTOM of the page, which is the one region of the
+  // notebook with no turn zone (the turn squares are the top margin corners), so
+  // a click on it can never turn the book instead of the answer. Independent of
+  // the flip, and it only touches its own sheet.
+  for (const reveal of el.querySelectorAll('.reveal-sheet')) {
+    const pages = reveal.querySelectorAll('.reveal-page');
+    const pager = reveal.parentElement.querySelector('.reveal-pager');
+    if (!pager) continue;                       // a one-page answer needs no pager
+    const count = pager.querySelector('.pager-count');
+    const prev = pager.querySelector('[data-dir="prev"]');
+    const next = pager.querySelector('[data-dir="next"]');
+    let i = 0;
+    const render = () => {
+      pages.forEach((p, n) => { p.hidden = n !== i; });
+      count.textContent = (i + 1) + ' / ' + pages.length;
+      prev.disabled = i === 0;
+      next.disabled = i === pages.length - 1;
+    };
+    prev.addEventListener('click', () => { if (i > 0) { i--; render(); } });
+    next.addEventListener('click', () => { if (i < pages.length - 1) { i++; render(); } });
+    render();
+  }
+
+  // --- bounded boxes: an edge fade exists only while there is more to reach -----
+  // A permanent fade would lie about a block that fits; an absent one would hide
+  // that it does not. All four edges are measured, on scroll and on resize, so the
+  // table, the listing and the narrative body all read the same way and none of
+  // them needs a scrollbar.
+  const syncScrolls = () => {
+    for (const wrap of el.querySelectorAll('[data-scroll]')) {
+      const box = wrap.querySelector('.scroll-box');
+      if (!box) continue;
+      const maxY = box.scrollHeight - box.clientHeight;
+      const maxX = box.scrollWidth - box.clientWidth;
+      wrap.classList.toggle('can-up', box.scrollTop > 1);
+      wrap.classList.toggle('can-down', box.scrollTop < maxY - 1);
+      wrap.classList.toggle('can-left', box.scrollLeft > 1);
+      wrap.classList.toggle('can-right', box.scrollLeft < maxX - 1);
+    }
+  };
+  for (const wrap of el.querySelectorAll('[data-scroll]')) {
+    const box = wrap.querySelector('.scroll-box');
+    if (!box) continue;
+    box.addEventListener('scroll', syncScrolls, { passive: true });
+    // A box that is not laid out yet reports no overflow, so it must be re-measured
+    // when it becomes visible: on a page turn, and on a pager swap inside a page
+    // (which fires no flip event). Without this the fades simply never appeared on
+    // any page but the one showing at load.
+    if (window.ResizeObserver) new ResizeObserver(syncScrolls).observe(box);
+  }
+  window.addEventListener('resize', syncScrolls);
+  window.__syncScrolls = syncScrolls;
+
+  const fit = () => {
+    const maxH = Math.max(300, window.innerHeight - 32);
+    const maxW = Math.max(150, (window.innerWidth - 40) / 2);  // two pages abreast
+    let h = Math.min(680, maxH);
+    let w = h * RATIO;
+    if (w > maxW) { w = maxW; h = w / RATIO; }
+    return { w: Math.round(w), h: Math.round(h) };
+  };
+  const size = fit();
+  const apply = (s) => {
+    const rs = document.documentElement.style;
+    rs.setProperty('--page-w', s.w + 'px');
+    rs.setProperty('--page-h', s.h + 'px');
+    // the cover shift is half the REAL page width, never a literal
+    rs.setProperty('--cover-shift-front', (-s.w / 2) + 'px');
+    rs.setProperty('--cover-shift-back', (s.w / 2) + 'px');
+  };
+  apply(size);
+
+  // A notebook opens and closes on its covers: hard front/back covers shown alone
+  // and centred, soft two-page spread in between. Nothing on the page flips on a
+  // click — the only turn zones are the margin square at the top-left and its
+  // mirror at the top-right (see .turn in notebook.css).
+  const pf = new St.PageFlip(el, {
+    width: size.w, height: size.h, showCover: true, usePortrait: false,
+    showPageCorners: true, disableFlipByClick: true,
+    maxShadowOpacity: 0.35, mobileScrollSupport: false,
+  });
+  pf.loadFromHTML(el.querySelectorAll('.page'));
+  prevZone.onclick = () => pf.flipPrev();
+  nextZone.onclick = () => pf.flipNext();
+
+  // The notebook opens and closes on its covers, each a single CENTRED page.
+  // StPageFlip centres the spread footprint, which parks the front cover on the
+  // right half and the back cover on the left half — so shift the book by half a
+  // page (in the matching direction) while a cover is showing. The turn zone with
+  // nothing to turn to is hidden (a cover shows only one page).
+  const syncCover = () => {
+    const i = pf.getCurrentPageIndex();
+    const last = pf.getPageCount() - 1;
+    stage.classList.toggle('at-front', i === 0);
+    stage.classList.toggle('at-back', i === last && last > 0);
+    prevZone.classList.toggle('is-hidden', i === 0);
+    nextZone.classList.toggle('is-hidden', i >= last);
+  };
+  pf.on('flip', syncCover);
+  pf.on('flip', () => window.__syncScrolls && window.__syncScrolls());
+  syncCover();
+
+  // Re-fit on a material window change. A static notebook has no state worth
+  // preserving across a re-layout, so a reload is the honest response.
+  let t;
+  window.addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const s = fit();
+      if (Math.abs(s.w - size.w) > 12 || Math.abs(s.h - size.h) > 12) location.reload();
+    }, 250);
+  });
+
+  // StPageFlip's own corner fold fires over a diagonal/5 (~171px) zone at EVERY
+  // book corner — far bigger than the page's margin square, and it includes the
+  // bottom corners. Confine it: hand the flip engine the pointer only while it is
+  // inside a turn square, and park it mid-book the moment the pointer leaves —
+  // StPageFlip clears the fold on a point that is not on a corner, so the fold
+  // disappears again. Raw moves are held back so its wide zone never sees them.
+  const flipEl = el.querySelector('.stf__block') || el;
+  const relay = (x, y) => {
+    const ev = new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true });
+    ev.atlasRelay = true;   // flagged so our own filter lets it through
+    flipEl.dispatchEvent(ev);
+  };
+  let wasInZone = false;
+  document.addEventListener('mousemove', (e) => {
+    if (e.atlasRelay) return;
+    e.stopPropagation();
+    const t = e.target;
+    const inZone = !!(t && t.classList && t.classList.contains('turn'));
+    if (inZone) {
+      relay(e.clientX, e.clientY);          // fold follows the pointer inside the square
+    } else if (wasInZone) {
+      const r = el.getBoundingClientRect();  // park mid-book → the fold is cleared
+      relay(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    wasInZone = inZone;
+  }, true);
+})();
+</script>
+</body>
+</html>
