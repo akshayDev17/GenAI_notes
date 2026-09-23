@@ -24,11 +24,16 @@
 #     notebook's `../../../assets/` and `../../../index.html` resolve exactly as they
 #     did locally.
 #
-# One-time setup, if the first run complains that Pages is not enabled:
-#   Settings → Pages → Source → "GitHub Actions".
-# `enablement: true` below asks the API to create the site for us, which usually makes
-# that step unnecessary — but it cannot convert a site already configured for the
-# branch source, so if Pages was ever enabled by hand, set the source explicitly.
+# One-time setup, and it has to be done by hand:
+#   Settings → Pages → Build and deployment → Source → GitHub Actions.
+#
+# CI cannot do it for you. `configure-pages` has an `enablement` input that looks like
+# the fix, and the action's own description rules it out: "This option requires a token
+# other than GITHUB_TOKEN". Creating a Pages site is a repository-ADMINISTRATION
+# operation, and the automatic token can never administer the repository that runs it —
+# no value under `permissions:` changes that. The first run of this workflow died
+# exactly there ("Create Pages site failed. Resource not accessible by integration"),
+# which is how this comment became accurate.
 
 name: Publish the atlas
 
@@ -64,8 +69,6 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       # The action hands `path` to tar as an argv element rather than through a shell,
       # so the space in "Harness Engineering" is safe. If it ever is not, stage the tree
