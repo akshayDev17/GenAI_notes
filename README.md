@@ -33,3 +33,59 @@
 3. Create personalized marketing materials that showcase local restaurants and dishes tailored to user preferences. ([Delivery Hero, Germany](https://www.deliveryhero.com))
 4. Generate personalized marketing content showcasing local offers and services available through the Gojek app.
 
+# Concepts
+
+## Agentic AI Study Roadmap (suggested learning order)
+
+### 1. Foundations (prerequisites before "agentic" makes sense)
+- prompting fundamentals & context windows
+- evals — how to measure whether a model/agent is actually good
+- RAG (retrieval-augmented generation) — grounding responses in external data
+- benchmaxing — recognizing when a model is overfit to a benchmark rather than genuinely capable; why held-out/private evals matter
+
+### 2. Tool use & interoperability protocols
+- function calling / tool use — the basic primitive that turns an LLM into an agent
+- MCP (Model Context Protocol) — standardized way to connect models to tools/data (donated to the Linux Foundation, Dec 2025)
+- A2A (Agent2Agent protocol, Google) — standardized agent-to-agent coordination, complements MCP
+
+### 3. Core agentic design patterns
+- ReAct (reason + act + observe loop)
+- Reflection / Reflexion (generate → critique → refine)
+- Plan-and-Execute vs. dynamic/exploratory (ReAct-style) planning
+- ReWOO (plan once, reduce redundant LLM calls)
+- Tree-of-Thoughts / search over candidate plans
+- Anthropic's 5 composable workflow patterns: prompt chaining, routing, parallelization, orchestrator-workers, evaluator-optimizer
+
+### 4. Memory & context
+- agentic memory — working, episodic, semantic, and procedural memory, retrieved in parallel and merged into context
+- context engineering — the discipline of curating what goes into the context window (broader than prompt engineering)
+
+### 5. Multi-agent systems
+- orchestration architectures: hierarchical, peer-to-peer, blackboard, marketplace
+- shared memory fabric / structured message passing between agents
+- when multi-agent is (and isn't) worth the coordination overhead
+
+### 6. Training & verification loop
+- post training (harness) — RLHF/RLAIF, fine-tuning on agent trajectories
+- verifiers — reward models / automatic checkers used to score rollouts for RL and evals
+
+### 7. Production concerns
+- guardrails & safety — validation, sandboxing, human-in-the-loop approval gates
+- observability & tracing for agent runs (structured logs, spans, replay)
+- cost/latency optimization — caching, model routing, distillation
+
+## System Design (agentic focus)
+- classic fundamentals (if new to you): load balancing, caching, queues, horizontal scaling
+- LLM inference serving: prefill vs. decode phases, KV-cache, continuous batching, quantization, speculative decoding
+- agents as distributed systems: idempotency (every real-world action must be safely retryable), state machines for workflow steps, circuit breakers, dead-letter queues
+- durable execution / workflow engines for long-running, resumable agent tasks
+- deployment strategies for agents: blue-green, shadow testing, canary releases
+- security: prompt-injection defense, sandboxed tool execution, least-privilege tool access, secrets handling
+
+## Docs/MCP tooling specifically for agentic concepts
+- [Context7](https://context7.com) already indexes docs for many agent frameworks (LangGraph, LlamaIndex, CrewAI, etc.) — good first stop even though it's general-purpose library docs, not agentic *concepts* per se
+- no single "Context7-for-agentic-concepts" server has emerged yet as of this writing; closest practical options:
+  - [DeepWiki MCP](https://docs.devin.ai/work-with-devin/deepwiki-mcp) — query any public GitHub repo's wiki on the fly; point it at pattern-catalog repos
+  - [Agent Patterns Catalog](https://github.com/agentpatternscatalog/patterns) — canonical, community-curated, vendor-neutral, machine-readable catalog of agent design patterns (pure data, no code) — pair with DeepWiki or a self-hosted docs server
+  - [docs-mcp-server](https://github.com/arabold/docs-mcp-server) — open-source, self-hostable MCP doc-indexer; point it at [agentic-design.ai](https://agentic-design.ai) (280+ patterns/techniques catalog) or Anthropic's "Building Effective Agents" guide to build your own always-current agentic-concepts index
+  - other Context7 alternatives worth knowing about: Docfork, Deepcon
