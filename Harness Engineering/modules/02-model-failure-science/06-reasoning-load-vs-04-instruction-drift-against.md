@@ -144,6 +144,19 @@
   - Worse, it invites the agent to re-derive from the same wrong anchor, re-emitting the propagated error with fresh confidence. The module's class 6 row does not list the instruction layer at all (L121).
 - **The class-6 remedy relocates the failure, it does not remove it.** Externalizing intermediate state (scratchpad, sub-agents) shortens the attention-held chain but lengthens the context — the state document grows, and the early state and standing rules sink toward the middle of a long context. The same task that failed as class 6 (depth) can then fail as class 4/5 (length). Orchestration work (M10/M11) therefore must ship alongside re-grounding and context-assembly discipline (M4/M10), not alone as "fixed".
 - A third, subtler failure mode of conflating: reaching for the M8 capability boundary as the universal fix. The tool ceiling in the module's class 4 answer (L297) is excellent against drift and cannot repair a wrong subtotal.
+- <details>
+  <summary><strong>The prevention for every class is the same move — externalize the object it loses</strong></summary>
+
+  - **Class 6 (reference):** externalize the *value* — a scratchpad the agent writes to between steps (M10/M11).
+  - **Class 1 · hallucination:** externalize the *fact* — retrieve before answering (M5), verify claims against the source (M12).
+  - **Class 2 · sycophancy:** externalize *independence* — strip the flatterer's framing (M6), invariance eval that the verdict must not flip (M12).
+  - **Class 3 · brittleness:** externalize *invariance* — adversarial test sets that paraphrase and reorder (M12).
+  - **Class 4 · drift:** externalize the *rule* — stable prefix / persistent policy (M6/M7), re-grounding (M10), and strongest: a tool-enforced capability boundary (M8).
+  - **Class 5 · position bias:** externalize *position* — put load-bearing facts at the edges, re-order (M4).
+  - **Class 7 · overlooked constraints:** externalize the *constraint* — constraint/coverage evals (M12), approval gate before any binding action (M15).
+  - **Class 8 · tool errors:** externalize the *tool boundary* — capability boundaries that make the wrong call impossible (M8), schema + result validation (M9/M13).
+  - **Class 9 · goal misspecification:** externalize the *intent* — governance approval gate (M15), explicit handoff points (M10).
+  </details>
 
 ---
 

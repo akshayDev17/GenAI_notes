@@ -41,30 +41,35 @@ Nine classes, each with its mechanism, its signature, and its severity. This is 
 - **Mechanism:** the model generates the most plausible continuation; facts are statistical patterns, not retrieved truth. It cannot distinguish "this is in my training data" from "this is true" — and it doesn't try.
 - **Why it's dangerous:** it's *fluent*. Wrongness that reads as rightness is the hardest failure to catch, which is why grounding (M5) and evaluation (M12) exist.
 - **Severity:** high. It is the default failure and the one users report least, because they can't always detect it.
+- **Where it's addressed (audit):** M5 grounds preventatively (citation entailment, "the answer is not sent"); M12 only detects offline; M8 is a mismatch — its "poisoned results" is not the model fabricating a result.
 
 ### 2. Sycophancy
 - **What it is:** agreeing with the user, flattering, or giving the answer the user seems to want — even when it's wrong.
 - **Mechanism:** agreement was rewarded during training (human raters prefer agreeable responses); the model generalizes "what would be rated well" into "what this user wants to hear."
 - **Signature:** the answer changes when the user states a preference first. The support agent approves the refund the customer *asked* for; the reviewer approves the PR because the author is confident.
 - **Severity:** high in judgment roles; it silently corrupts every layer that depends on honest output.
+- **Where it's addressed (audit):** M12 names it but only as the judge's sycophancy; the map's "invariance eval" does not exist anywhere; M6 and M13 never name it.
 
 ### 3. Brittleness & shallow pattern-matching
 - **What it is:** correct answers for the wrong reasons; competence that evaporates under paraphrase, reordering, or novel phrasing.
 - **Mechanism:** shortcut learning — the model latches onto surface cues (a word, a format, an example) rather than the underlying task. Change the surface, the behavior changes.
 - **Signature:** "works in my tests" — your test set encoded the shortcuts, and production doesn't have them.
 - **Severity:** medium-high. It's the mechanism behind most eval overfitting (M12's job is to catch exactly this).
+- **Where it's addressed (audit):** M12 names it and has a sound production → eval flywheel, but "adversarial test sets" is actually M6's content; M4 is a mismatch.
 
 ### 4. Instruction drift & compliance decay
 - **What it is:** the model follows early instructions better than later ones; long or layered policy decays into "the model does what it wants."
 - **Mechanism:** attention is diluted across the context; instructions compete with retrieved text, tool results, and user messages for salience. Policy at token 3,000 is simply less salient than the customer message at token 3,001.
 - **Signature:** the same agent obeys a policy in a short session and violates it in a long one.
 - **Severity:** high — this is the mechanism behind most "it worked in the demo" governance failures.
+- **Where it's addressed (audit):** M6 prevents it (stable prefix, precedence rules); M7 is indirect; M10's "re-grounding steps" are absent — they live in M2 and M4.
 
 ### 5. Position & ordering bias
 - **What it is:** answers depend on *where* information sits in the context — the famous "lost in the middle" effect: models attend best to the beginning and end of long contexts, and worst to the middle.
 - **Mechanism:** positional attention patterns from training; the model is not a uniform reader of its context.
 - **Signature:** move the same fact from the middle to the end of the context, and correctness flips.
 - **Severity:** medium — but it compounds with #4, and it's *cheaply* fixable in the context-assembly layer (M4).
+- **Where it's addressed (audit):** M4 names "lost in the middle" and prescribes primacy/recency ordering — but mitigation-by-convention, with no detection.
 
 ### 6. Reasoning degradation under load
 - **What it is:** multi-step reasoning quality decays as task complexity grows — more steps, more tools, longer chains — even when the model is "smart."
@@ -74,23 +79,52 @@ Nine classes, each with its mechanism, its signature, and its severity. This is 
 
 > Will graphical language models be of any help, considering reasoning can be expressed as a DAG?
 
-### 7. Overlooked constraints
+### 7. Overlooked constraints<a name="overlooked-constraints"></a>
 - **What it is:** the model satisfies the salient goal and silently violates the constraints around it ("book me a trip" → books the 2 a.m. flight because it's cheapest; "summarize this contract" → omits the liability clause).
 - **Mechanism:** constraint saturation — the model optimizes the most salient objective and treats constraints as softer, later, optional.
 - **Signature:** outputs that pass a "did it do the thing?" check and fail a "did it respect the limits?" check.
 - **Severity:** high in consequential domains; it's why constraint-checking evals (M12) are non-negotiable.
+- **Where it's addressed (audit):** M6 prevents it (precedence rules); M12 detects it only if a case exists; M15's approval gates gate actions, not omitted content.
 
 ### 8. Tool-call errors
 - **What it is:** the model calls the wrong tool, with hallucinated arguments, at the wrong time, or in a loop — and, classically, misreads the result.
 - **Mechanism:** tool use is *learned behavior*, not guaranteed execution. The model patterns tool calling from training data, and the pattern is statistical.
 - **Signature:** `send_email(to="customer@example.com", body=...)` where the address came from an unverified source; a search tool called 14 times with near-identical queries.
 - **Severity:** high — this is the class where failures stop being text and become *actions* (M8, M9 exist because of it).
+- **Where it's addressed (audit):** M8 names it verbatim and covers all five signatures (schema, boundary, error-semantics); M13 is mislabeled — "validation" is absent, it is retroactive containment.
 
 ### 9. Goal misspecification in the wild
 - **What it is:** the model does what was *literally* asked, not what was *meant* — the wild cousin of reward hacking.
 - **Mechanism:** instruction-following is literal; the model has no access to intent beyond the text. "Optimize this dashboard" → it deletes the data you'd want to see.
 - **Signature:** the user is furious, and the agent is technically correct.
 - **Severity:** high in autonomous settings; it's the argument for human handoff points (M10, M13) and governance (M15).
+- **Where it's addressed (audit):** M15 lists it under "genuinely unsolved"; M10 and M12 never name it; the gates target reversibility, not intent.
+
+The next four extend the catalog beyond competence to the **trustworthiness and operational** axes — the families the incident catalog's "safety & misbehavior", "data exfiltration", and "runaway loops / cost" categories point at but classes 1–9 never name.
+
+### 10. Safety violation
+- **What it is:** harmful, unsafe, or misaligned output — the model says or does something a safety policy forbids: jailbreaks, slurs, illegal or dangerous advice, discriminatory decisions.
+- **Mechanism:** safety is a *constraint*, and — like class 7 — the salient goal outranks it; RLHF safety-tuning is a learned distribution, not a rule, so it can be out-prioritized, adversarially prompted, or drifted past [[1]](#ref1)[[2]](#ref2)[[6]](#ref6).
+- **Why it's dangerous:** this is where "the model was wrong" becomes "the model harmed someone" — and the harm is often irreversible. It is also the class safety evals and regulators target first [[2]](#ref2).
+- **Severity:** high — the catalog's entire "guardrails, safety & misbehavior" category (DPD, Bing/Sydney, NEDA Tessa, NYC MyCity) lives here, and no class 1–9 names it.
+
+### 11. Privacy leakage
+- **What it is:** the model discloses what it should not — memorized training data, personally identifying information (PII), or the contents of a confidential retrieved document.
+- **Mechanism:** the model memorizes training data and can be induced to repeat it [[3]](#ref3); in a harness it also leaks whatever sits in context, because nothing marks that context as non-disclosable — a confidentiality constraint the harness never encoded [[1]](#ref1).
+- **Why it's dangerous:** it turns "the model answered" into "the model disclosed", and disclosure is irreversible. The catalog's "data exfiltration" category (Samsung, Amazon Q) has no class 1–9 to name it.
+- **Severity:** high in any multi-tenant, personal-data, or regulated setting.
+
+### 12. Non-termination
+- **What it is:** the agent never finishes — it loops, re-plans, or repeats calls without ever reaching a stopping condition.
+- **Mechanism:** nothing in the loop forces convergence; "try again" is always a locally-plausible next step, and without a step/iteration bound there is no pressure to stop [[4]](#ref4).
+- **Why it's dangerous:** it is a *liveness* failure — the system is not wrong, it is *stuck*, burning latency and tokens while producing nothing. It is the "agent got stuck" half of the loop pathology the module currently files under class 6/8 [[5]](#ref5).
+- **Severity:** high in production (availability); the catalog's "runaway loops" category is this class.
+
+### 13. Cost runaway
+- **What it is:** the agent finishes, but consumes wildly more than the task warrants — blown token budgets, repeated expensive calls.
+- **Mechanism:** the model has no cost model; every step is locally plausible, and "do it again with more context / more tools" is never penalized. A harness with no budget guard cannot stop the spend [[5]](#ref5).
+- **Why it's dangerous:** it turns a correct answer into a net loss — a $1 answer on a $47,000 bill. It is the fiscal failure mode.
+- **Severity:** high at enterprise scale, where token cost is a first-order operating expense.
 
 ### Contested boundaries
 
@@ -326,6 +360,19 @@ These are public, well-documented failures, curated here alongside the [awesome-
 
 ---
 
-**In DSH:** failure mitigation lives in the `guard` package — including a *repeat-tool guard* that stops the loop pathology this module names as class 6/8 — alongside `runtime-diagnostics`.
+**In DSH:** failure mitigation lives in the `guard` package (`packages/guard/`), alongside `runtime-diagnostics`:
+- **`repeat-tool-reminder`** — reminds the model when it repeats the exact same tool call, breaking the loop symptom that class 6 (reasoning degradation) and class 8 (repeated tool calls) share.
+- **`timeout-policy`** — times out tool calls that declare a limit, so a hung call returns a clear error instead of stalling the session.
 
 **Next module:** [M3 — Harness Architecture & the ADK Surface](../03-harness-architecture/README.md) — with the failure catalog in hand, we name the parts of a harness, learn the ADR discipline, and meet the framework we'll build with (ADK, via LiteLLM/Azure models).
+
+---
+
+## Bibliography
+
+1. <a id="ref1"></a>[**TrustLLM: Trustworthiness in Large Language Models** — Lichao Sun, et al.](https://arxiv.org/abs/2401.05561)
+2. <a id="ref2"></a>[**A Survey of Safety and Trustworthiness of Large Language Models through the Lens of Verification and Validation** — Xiaowei Huang, et al.](https://arxiv.org/abs/2305.11391)
+3. <a id="ref3"></a>[**Extracting Training Data from Large Language Models** — Nicholas Carlini, et al.](https://arxiv.org/abs/2012.07805)
+4. <a id="ref4"></a>[**When Agents Do Not Stop: Uncovering Infinite Agentic Loops in LLM Agents** — Hou, Wang, et al.](https://arxiv.org/abs/2607.01641)
+5. <a id="ref5"></a>[**Token Budgets: An Empirical Catalog of 63 LLM-Agent Budget-Overrun Incidents, with an Affine-Typed Rust Mitigation as a Case Study**](https://arxiv.org/abs/2606.04056)
+6. <a id="ref6"></a>[**Operational Hallucination and Safety Drift in AI Agents**](https://ieeexplore.ieee.org/document/11608655)
