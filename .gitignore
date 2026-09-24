@@ -12,3 +12,8 @@ Harness Engineering/mindmaps/atlas.zip
 deepseek-harness/
 .vscode
 .dsh-vision-router
+
+# Python bytecode caches. Generated on every run, never source. No leading
+# slash, so `__pycache__/` matches at any depth in the tree.
+__pycache__/
+*.py[cod]
