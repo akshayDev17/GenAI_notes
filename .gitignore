@@ -2,4 +2,9 @@
 *.env
 *ipynb_checkpoints*
 **/qdrant_storage/*
+# The atlas archive is a function of the tree being deployed, so the Pages workflow
+# builds it at deploy time. Committing it would mean a copy that can drift from the map
+# it is offered beside, and ~16 MB of zip in the history once the course is full.
+Harness Engineering/mindmaps/atlas.zip
+
 .DS_Store

@@ -70,6 +70,25 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      # The archive the map's "↓ Download" link points at. Built HERE rather than
+      # committed: it is a function of the tree being deployed, so committing it would
+      # mean a copy that can drift, and ~16 MB of zip in the history once the course is
+      # full. Zipping the `mindmaps` directory (not its contents) means extracting on a
+      # phone yields one folder rather than littering Downloads.
+      #
+      # Built to /tmp and moved in: an archive created inside the directory it is
+      # archiving can try to include itself.
+      #
+      # A .zip is NOT an offline reading path for Android — Chrome cannot open a local
+      # page with sibling assets, and neither can the folder Files by Google extracts.
+      # It exists so a reader can take the files to a device and a browser that can.
+      - name: Build the downloadable archive
+        run: |
+          cd "Harness Engineering"
+          zip -qr /tmp/atlas.zip mindmaps
+          mv /tmp/atlas.zip mindmaps/atlas.zip
+          ls -la mindmaps/atlas.zip
+
       # The action hands `path` to tar as an argv element rather than through a shell,
       # so the space in "Harness Engineering" is safe. If it ever is not, stage the tree
       # into `_site/` first (`cp -R "Harness Engineering/mindmaps/." _site/`) and point
