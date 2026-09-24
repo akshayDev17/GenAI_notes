@@ -1,0 +1,2 @@
+ollama>=0.5.1
+datasets>=2.20.0

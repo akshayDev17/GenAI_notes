@@ -14,19 +14,13 @@ It features:
 """
 
 import argparse
-import os
 import re
 import time
 
 import ollama
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def _results_md_path(model_name):
-    """results_<model-name>.md, next to this script, with filesystem-unsafe chars swapped out."""
-    safe_name = re.sub(r'[^A-Za-z0-9._-]', '_', model_name)
-    return os.path.join(SCRIPT_DIR, f"results_{safe_name}.md")
+from ollama_client import OllamaLlmClient
+from run_dumper import RunDumper
 
 # ==========================================
 # 1. VERBATIM PROMPTS & PREAMBLES (FROM PAPER)
@@ -212,10 +206,14 @@ class ConversationalFactoredDecomposer:
     Orchestrates the multi-turn conversational loop for Factored Decomposition.
     This coordinates three chat histories: the Planner, the Answering Agent, and the Recomposition Agent.
     """
-    def __init__(self, llm_client, dump_to_markdown=False):
+    def __init__(self, llm_client, dump_to_markdown=False, run_label=None):
         self.llm = llm_client
-        self.dump_to_markdown = dump_to_markdown
-        self._dump_sections = []
+        self.dumper = RunDumper(
+            model_name=getattr(llm_client, "model", "unknown-model"),
+            title="Factored Decomposition",
+            enabled=dump_to_markdown,
+            run_label=run_label,
+        )
 
     def _record_dump(self, title, history, response):
         """
@@ -224,23 +222,12 @@ class ConversationalFactoredDecomposer:
         bits (final planner output, extracted subanswer, etc.) - this captures
         everything, including the full preamble/few-shot text the console never prints.
         """
-        if not self.dump_to_markdown:
-            return
-        self._dump_sections.append(
-            f"## {title}\n\n"
-            f"### Full prompt sent\n\n{_history_to_markdown(history)}\n"
-            f"### Raw model response\n\n{response}\n\n---\n"
-        )
+        self.dumper.record(title, _history_to_markdown(history), response)
 
     def _write_dump_file(self):
-        if not self.dump_to_markdown:
-            return
-        model_name = getattr(self.llm, "model", "unknown-model")
-        path = _results_md_path(model_name)
-        with open(path, "w") as f:
-            f.write(f"# Factored Decomposition - Full Run Transcript ({model_name})\n\n")
-            f.write("\n".join(self._dump_sections))
-        print(f"\n[DUMP] Full history written to {path}")
+        path = self.dumper.write()
+        if path:
+            print(f"\n[DUMP] Full history written to {path}")
 
     def solve(self, parent_question, choices):
         print(f"\n[SYSTEM] Starting Paper-style Factored Decomposition execution.")
@@ -318,7 +305,7 @@ class ConversationalFactoredDecomposer:
         final_prediction = self._query_recomposition_agent(parent_question, choices, completed_qa_tuples)
         print(f"\n[SYSTEM] Execution Complete! Final Choice: {final_prediction}")
         self._write_dump_file()
-        return final_prediction
+        return final_prediction, completed_qa_tuples
 
     def _query_isolated_answering_agent(self, subquestion):
         """
@@ -421,42 +408,6 @@ class MockPaperLLMClient:
 
     def call_recomposition_agent(self, history):
         return "Based on the provided subanswers, Savannah James' maiden name is Brinson. The correct answer is choice (C) Brinson."
-
-
-# ==========================================
-# 4. REAL LOCAL OLLAMA-BACKED CLIENT
-# ==========================================
-
-class OllamaLlmClient:
-    """
-    Drives the same planner / answering-agent / recomposition-agent interface
-    as MockPaperLLMClient, but against a real local model served by Ollama.
-    Every call is a single, independent completion, exactly like the mock -
-    the only difference is the response is genuinely generated, not scripted.
-    """
-    def __init__(self, model="llama3.2:latest"):
-        self.model = model
-
-    def _complete(self, history):
-        messages = [
-            {"role": "user" if turn["role"] == "human" else "assistant", "content": turn["content"]}
-            for turn in history
-        ]
-        # Reasoning models (e.g. qwen3) emit a <think>...</think> block by default, which
-        # would otherwise sit in front of every planner/answering/recomposition response and
-        # risk confusing the <sub q>/<result> regex extraction if the model's reasoning text
-        # happens to contain similar-looking substrings.
-        response = ollama.chat(model=self.model, messages=messages, think=False)
-        return response["message"]["content"]
-
-    def call_planner(self, history):
-        return self._complete(history)
-
-    def call_answering_agent(self, history):
-        return self._complete(history)
-
-    def call_recomposition_agent(self, history):
-        return self._complete(history)
 
 
 def select_model():
