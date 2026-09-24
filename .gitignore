@@ -8,3 +8,7 @@
 Harness Engineering/mindmaps/atlas.zip
 
 .DS_Store
+
+deepseek-harness/
+.vscode
+.dsh-vision-router
