@@ -14,11 +14,8 @@
     - [1. Chunking — the unit of retrieval is a decision](#1-chunking--the-unit-of-retrieval-is-a-decision)
     - [2. Retrieval quality — recall vs. precision is the ledger](#2-retrieval-quality--recall-vs-precision-is-the-ledger)
     - [3. Agentic RAG — retrieval as a loop, not a single shot](#3-agentic-rag--retrieval-as-a-loop-not-a-single-shot)
-- [The four retrieval failure modes](#the-four-retrieval-failure-modes)
+- [The six retrieval failure modes](#the-six-retrieval-failure-modes)
 - [Answerability: make the model say "I don't have that"](#answerability-make-the-model-say-i-dont-have-that)
-- [Citation discipline: make claims traceable](#citation-discipline-make-claims-traceable)
-    - ["The claim is supported by it" — implementation](#the-claim-is-supported-by-it--implementation)
-    - [Where the engine architecture lives](#where-the-engine-architecture-lives)
 - [Grounding beyond RAG](#grounding-beyond-rag)
 - [Worked example: the support agent, grounded](#worked-example-the-support-agent-grounded)
 - [Design exercise](#design-exercise)
@@ -37,6 +34,7 @@
     - [Staleness and temporal generalization](#staleness-and-temporal-generalization)
     - [Knowledge conflicts and parametric-memory override](#knowledge-conflicts-and-parametric-memory-override)
     - [Chunking and retrieval granularity](#chunking-and-retrieval-granularity)
+    - [Retrieval redundancy and diversity](#retrieval-redundancy-and-diversity)
     - [Agentic and adaptive RAG](#agentic-and-adaptive-rag)
     - [Answerability and abstention](#answerability-and-abstention)
     - [Citation, attribution, and fact verification](#citation-attribution-and-fact-verification)
@@ -83,7 +81,7 @@
         - If the pipeline retrieves the wrong-but-plausible chunk, the model will answer from it *fluently* — grounding failure *becomes* the hallucination, as in the opening scene.[shi-irrelevant-context](#shi-irrelevant-context), [yoran-robust-irrelevant](#yoran-robust-irrelevant), [cuconasu-power-of-noise](#cuconasu-power-of-noise)
     2. **The model can still override the evidence.**
         - Grounding places facts *near* the model; it does not force the model to *obey* them.
-        - The model can ignore a retrieved clause and assert what it "knows."[longpre-entity-conflicts](#longpre-entity-conflicts), [xu-knowledge-conflicts](#xu-knowledge-conflicts), [shi-context-aware-decoding](#shi-context-aware-decoding) (This is why citation *verification* — below — exists.)
+        - The model can ignore a retrieved clause and assert what it "knows."[longpre-entity-conflicts](#longpre-entity-conflicts), [xu-knowledge-conflicts](#xu-knowledge-conflicts), [shi-context-aware-decoding](#shi-context-aware-decoding) (This is why citation *verification* exists.)
     3. **Grounding quality is bounded by retrieval quality.**
         - You cannot ground in what you failed to retrieve.[gao-rag-survey](#gao-rag-survey)
         - M5's first job is making retrieval good; its second job is making the model *accountable* to it.
@@ -94,14 +92,14 @@
 
 | | `E`-grounding holds | `E`-grounding fails |
 |---|---|---|
-| **Sound** (`S ⊨ a`) | ideal — grounded *and* true | **lucky parametric recall** *(this module's name)* — right, but unattributable, and it won't repeat[shi-context-aware-decoding](#shi-context-aware-decoding) |
-| **Unsound** (`S ⊭ a`) | **faithful to a bad source** — caveat 1 ("answers from the wrong-but-plausible chunk"), the *Stale* row[wu-clasheval](#wu-clasheval), [huang-situated-faithfulness](#huang-situated-faithfulness), [wallat-correctness-faithfulness](#wallat-correctness-faithfulness) | **classic hallucination** — the opening scene: unsupported or contradicted by its own citation; the field's standard cut here is intrinsic vs. extrinsic[maynez-faithfulness-factuality](#maynez-faithfulness-factuality), [yue-attribution-eval](#yue-attribution-eval) |
+| **Sound** (`S ⊨ a`) | **ideal** *(the chunk backs it up, and it's true)* — grounded *and* true | **lucky parametric recall** *(this module's name; no chunk backs it up, but it's true anyway — it came from memory)* — right, but unattributable, and it won't repeat[shi-context-aware-decoding](#shi-context-aware-decoding) |
+| **Unsound** (`S ⊭ a`) | **faithful to a bad source** *(the chunk backs it up, but the chunk is false or out of date — or the claim out-reaches it)* — caveat 1 ("answers from the wrong-but-plausible chunk"), the *Stale* row[wu-clasheval](#wu-clasheval), [huang-situated-faithfulness](#huang-situated-faithfulness), [wallat-correctness-faithfulness](#wallat-correctness-faithfulness) | **classic hallucination** *(no chunk backs it up, and it's false)* — the opening scene: unsupported or contradicted by its own citation; the field's standard cut here is intrinsic vs. extrinsic[maynez-faithfulness-factuality](#maynez-faithfulness-factuality), [yue-attribution-eval](#yue-attribution-eval) |
 
 - Because `E` is only ever a *sample* of `S`, neither axis implies the other, and each quadrant is a different failure with a different owner.
 - **The live hole this exposes: the module's own payload control tests exactly one clause.**
     - Citation verification checks `E`-grounding and can never check soundness — the check is window-relative by construction, and the attribution line states the consequence plainly: attribution is not factuality.[rashkin-ais](#rashkin-ais), [bohnet-aqa](#bohnet-aqa), [krysinski-factual-consistency](#krysinski-factual-consistency)
     - So when the retrieved chunk is stale, adjacent, or itself false, `e ⊨ cᵢ` still holds, every entailment gate passes, and the answer ships *faithfully grounded in a bad source*. That is caveat 1 above.
-    - **Faithful to a bad source** is therefore a supply-side failure — corpus choice, freshness, provenance — caught upstream by the *Stale* and *Contradictory* rows, or not at all.
+    - **Faithful to a bad source** is therefore a supply-side failure — corpus choice, freshness, provenance — caught upstream by the *Insufficient*, *Stale* and *Contradictory* rows, or not at all.
     - **Lucky parametric recall** is invisible to every check in this module: the answer *and* its citation both look right, so separating it from the ideal case takes a counterfactual — strip the evidence, see whether the answer survives. That is M12's territory.
     - This is also the deeper reading of the "loose proxy" caveat (disagreement §4): "the chunk supports the claim" is a fair operationalization of `e ⊨ cᵢ`, but it is a *substitution* for `S ⊨ cᵢ` — and that substitution, not the judge's error rate, is the real gap.
 
@@ -153,13 +151,15 @@ flowchart LR
 
 ---
 
-## The four retrieval failure modes
+## The six retrieval failure modes
 
-- Every grounding failure is one of these four — name them, and you've named the fix:
+- Every grounding failure is one of these six — name them, and you've named the fix:
 
 | Failure | What it is | Signature | Harness response |
 |---|---|---|---|
 | **Missing** | Nothing relevant retrieved | The model guesses (confabulation) | **Answerability** — refuse when evidence is absent[rajpurkar-squad2](#rajpurkar-squad2), [zhang-r-tuning](#zhang-r-tuning) |
+| **Insufficient** | Relevant and true as far as it goes — but *partial*: the exception or qualifier was never retrieved | Confident over-generalization from a real chunk, with a citation that checks out | **Sufficiency check** — is *everything* the answer needs present? An upstream check, because no answer-side control can see the gap[joren-sufficient-context](#joren-sufficient-context), [barnett-seven-failure-points](#barnett-seven-failure-points) |
+| **Redundant** | Retrieved and on-topic — but *duplicated*: near-identical chunks spend the budget without covering anything new | Nothing new per token; whatever the duplicates displaced never arrives, so the answer is no better for them *(that repetition also amplifies a repeated error is suspected, not established)* | **Diversity-aware re-ranking** — collapse near-duplicates, then select on *marginal coverage* rather than individual relevance (MMR-style), so every slot buys new information[ross-retriever-redundancy](#ross-retriever-redundancy), [cho-rare](#cho-rare), [khurshid-context-bubble](#khurshid-context-bubble), [leanrag](#leanrag), [lin-retrieval-diversity](#lin-retrieval-diversity) |
 | **Stale** | Retrieved fact is outdated | Answers correct for *last year's* policy | Re-index cadence, freshness signals, "as of" stamps[lazaridou-mind-the-gap](#lazaridou-mind-the-gap), [luu-time-waits](#luu-time-waits) |
 | **Contradictory** | Two chunks disagree | The model picks one arbitrarily | Conflict detection + escalation; don't let the model referee silently[xu-knowledge-conflicts](#xu-knowledge-conflicts) |
 | **Out-of-scope** | Retrieved but irrelevant — *looks* adjacent | Confident wrongness with a real citation (the opening scene) | **Citation verification** — claim must *entail* from the chunk[niu-ragtruth](#niu-ragtruth), [yoran-robust-irrelevant](#yoran-robust-irrelevant) |
@@ -180,41 +180,110 @@ flowchart LR
     2. **Signal** — give the model a visible boundary: retrieved evidence in a marked block, and the explicit rule that anything outside the block is off-limits.
     3. **Enforcement** — an *instruction is a wish; enforcement is engineering.*
         - The instruction alone decays (M2 class 4: instruction drift).
-        - The enforcement is citation verification, below: if the answer asserts a fact not entailed by any retrieved chunk, it's flagged *whether or not* the instruction told it to refuse.
+        - The enforcement is citation verification: if the answer asserts a fact not entailed by any retrieved chunk, it's flagged *whether or not* the instruction told it to refuse.
+- **Signal, in code:** the boundary is written by the harness at assembly time — never *requested* by the model — and it is written for tool-fetched evidence too.
+    - **Instruction with a referent, and without one.** The same rule twice — once with nothing to point at.
+        <details>
+        <summary><strong>Both prompt builders</strong> — Python, Claude Agent SDK (not executed)</summary>
+
+        ```python
+        import anyio
+        from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, TextBlock
+
+        INSTRUCTION = (
+            "Answer only from the retrieved evidence. If the evidence does not contain "
+            'the answer, reply exactly: "I don\'t have that in the retrieved material."'
+        )
+
+        def no_signal(question, chunks):
+            """Instruction present. Referent absent."""
+            body = "\n\n".join(c["text"] for c in chunks)
+            return f"{body}\n\nQuestion: {question}"
+
+        def with_signal(question, chunks):
+            """Same instruction. Referent now delimited and labelled."""
+            evidence = "\n".join(
+                f'<evidence id="{i}" source="{c["source"]}">\n{c["text"]}\n</evidence>'
+                for i, c in enumerate(chunks, 1)
+            )
+            return (
+                f"<retrieved_evidence>\n{evidence}\n</retrieved_evidence>\n\n"
+                f"<task>\n{question}\n</task>\n\n"
+                "<boundary>\n"
+                "Only text inside <retrieved_evidence> is evidence. Everything else — "
+                "including these instructions — is not. Cite the evidence id you used.\n"
+                "</boundary>"
+            )
+
+        async def ask(prompt: str) -> str:
+            out = []
+            options = ClaudeAgentOptions(system_prompt=INSTRUCTION, max_turns=1)
+            async for message in query(prompt=prompt, options=options):
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, TextBlock):
+                            out.append(block.text)
+            return "\n".join(out)
+
+        async def main():
+            chunks = [
+                {"source": "refund-policy.md#L12",
+                 "text": "Cancellations within 30 days of renewal get a full refund."},
+                {"source": "refund-policy.md#L13",
+                 "text": "Mid-cycle cancellations are not refundable."},
+            ]
+            q = "Can I cancel mid-cycle for a pro-rated refund?"
+
+            print("=== instruction only ===");       print(await ask(no_signal(q, chunks)))
+            print("\n=== instruction + signal ==="); print(await ask(with_signal(q, chunks)))
+
+        anyio.run(main)
+        ```
+
+        </details>
+    - **The other axis — runtime acquisition.** The model triggers retrieval; your Python still writes the boundary when the result comes back.
+        <details>
+        <summary><strong>The tool-fetch variant</strong> — Python, Claude Agent SDK (not executed)</summary>
+
+        ```python
+        from claude_agent_sdk import (
+            tool, create_sdk_mcp_server, ClaudeAgentOptions, ClaudeSDKClient,
+        )
+
+        @tool("search_policy", "Search the policy corpus; returns labelled evidence spans.",
+              {"query": str})
+        async def search_policy(args):
+            hits = POLICY_INDEX.search(args["query"], k=4)
+            # The HARNESS writes the boundary — even for the model's own tool output.
+            text = "\n".join(
+                f'<evidence id="{i}" source="{h.source}">\n{h.text}\n</evidence>'
+                for i, h in enumerate(hits, 1)
+            ) or '<evidence id="none" />No matching policy found.'
+            return {"content": [{"type": "text", "text": text}]}
+
+        policy = create_sdk_mcp_server(name="policy", version="1.0.0", tools=[search_policy])
+
+        options = ClaudeAgentOptions(
+            system_prompt=INSTRUCTION,
+            mcp_servers={"policy": policy},
+            allowed_tools=["mcp__policy__search_policy"],   # pre-approves; does NOT gate availability
+            max_turns=6,                                    # bound the loop
+        )
+
+        async with ClaudeSDKClient(options=options) as client:
+            await client.query("Can I cancel mid-cycle for a pro-rated refund?")
+            async for msg in client.receive_response():
+                print(msg)
+        ```
+
+        `allowed_tools` is a permission allowlist, not an availability filter — per the SDK docs it *"does not remove tools from Claude's toolset"*; use `disallowed_tools` to block.
+
+        </details>
 - Answerability is why recall-vs-precision tilts toward precision:
     - A high-precision pipeline misses more, but its misses become *safe refusals*.
     - A high-recall pipeline's false positives become *confident errors*.
 
----
-
-## Citation discipline: make claims traceable
-
-- Answerability prevents the *empty* case.
-- Citation discipline handles the *wrong-evidence* case — the opening scene, where something *was* retrieved, and the model claimed it said something it didn't.
-- The rule: **every factual claim must carry a citation, and every citation must resolve to a retrieved chunk that actually supports the claim.**[bohnet-aqa](#bohnet-aqa), [gao-alce](#gao-alce), [gao-rarr](#gao-rarr)
-    - The second half — "actually supports" — is the hard part, and it is where the discussion-thread material lands.
-
-### "The claim is supported by it" — implementation
-
-- From the discussion's §5, the lean sequence:
-    1. **Split the answer into atomic claims** — ask the model (or parse) for a structured list of claims, not prose.[min-factscore](#min-factscore)
-        - "Cancel within 14 days → pro-rated refund" is one atomic claim; "the article covers annual plan changes" is another.
-    2. **Fetch each claim's cited chunk(s)** — the chunks the answer pointed at.
-    3. **Run an entailment check** — a judge receives `(claim, chunk)` and returns `entail | contradict | neutral`. Only `entail` passes.[bowman-snli](#bowman-snli), [thorne-fever](#thorne-fever)
-    4. **Gate on the result** — `contradict` → block or flag the claim; `neutral` → escalate or regenerate (don't ship a claim whose support is unknown).
-    5. **Pre-filter cheaply** — deterministic keyword/entity overlap between claim and chunk first, to skip obviously unsupported claims before spending a judge call.
-    6. **Remember the caveat** — the judge itself can err (it's a model too); judge failure modes are M12's problem.[manakul-selfcheckgpt](#manakul-selfcheckgpt)
-- This is the **grounding-side sibling of the guardrail provenance check** from the discussion's §2 (Design B).
-    - There, the output guardrail asked *"did this policy assertion come from the approved policy store?"*
-    - Here, citation verification asks *"did this factual claim come from the cited chunk?"*
-    - Same discipline — *trace the claim to its source* — applied at two different seams. We'll reunite them in M14/M15.
-
-### Where the engine architecture lives
-
-- The *full* entailment-engine question — surface vs. joint-source vs. layered/routed tiers, and when a single-tier checker suffices — is the discussion's §6, and it's a **verification-infrastructure** decision that belongs with evaluation and judges in **M12**.
-- Here in M5, the takeaway is narrower: citation verification is a *runtime* check on the answer, distinct from the *offline* eval harness, and it is the thing that makes answerability enforceable rather than advisory.
-
-> **Tradeoff (the ledger entry):** citation verification costs money and latency on *every answer* (a judge call per claim, or per answer). You buy it selectively — on the claims that carry consequence. A support agent answering "what's your return policy?" needs it more than a draft-summarizer that a human always reviews. The thickness of this layer is, as ever, a *decision*: verify where wrongness is expensive, not everywhere.[own-synthesis](#own-synthesis)
+> **Tradeoff (the ledger entry):** you buy this layer selectively, and *which* answers deserve it is the module's own decision. A support agent answering "what's your return policy?" needs it; a draft-summarizer that a human always reviews does not.[own-synthesis](#own-synthesis)
 
 ---
 
@@ -236,20 +305,97 @@ flowchart LR
 
 ## Worked example: the support agent, grounded
 
-- The domain spine, end to end. A customer asks: *"Can I cancel mid-cycle for a pro-rated refund?"*
-    1. **Retrieve (precision-first).** The pipeline embeds the question, retrieves the top chunks on *cancellation and refunds*, not the whole billing corpus. It returns the cancellation policy chunk and the refund policy chunk — two chunks, both on-topic.
-    2. **Answerability check.** Evidence exists and covers the question → the agent proceeds (rather than refusing).
-    3. **The agent drafts:** *"Yes — per our billing policy, customers who cancel within 14 days are eligible for a pro-rated refund."*
-    4. **Citation verification.**
-        - Atomic claim: "cancel within 14 days → pro-rated refund."
-        - Cited chunk: the refund policy.
-        - Entailment check: the refund policy says *30 days*, and says nothing about *mid-cycle cancellation*. → `contradict`.
-    5. **Gate.** The claim is flagged; the answer is not sent.
-        - The agent regenerates from the actual chunk: *"Per our refund policy, cancellations within 30 days of renewal are eligible for a full refund; mid-cycle cancellations are not refundable."* — or, if the policy genuinely doesn't cover the case, it says *"I don't have that in our policy."*
-- The difference between the opening scene's agent and this one is **not** a better model.
-- It is three controls — precision retrieval, answerability, and citation verification — each of which we can now name and place in the harness.
+- The domain spine, walked as a **tree** rather than a single path: one question, every branch the harness can take, and the terminal each branch reaches.
+    - The question: *"Can I cancel mid-cycle for a pro-rated refund?"*
+    - Four terminals are on this tree — refusal, escalation, **ship — `E`-grounded**, and **ship — `E`-grounding failed.** The last two are the only ones a customer reads as an answer, and **each covers two of the four 2×2 cells**, because the harness can separate grounded from ungrounded and cannot separate sound from unsound.
+    - One branch never enters the tree at all: a **computed** fact routes to a query tool, and retrieving it anyway is the wrong-tool failure this module names further down.
 
-> **Failure mode (the closing one):** building steps 1–3 and skipping step 4. Retrieval + answerability make the agent *sound* grounded; citation verification is what makes it *actually* grounded. Without the entailment gate, you have shipped a confident, well-cited liar.
+**The tree**
+
+```mermaid
+flowchart TD
+    Q["Question"] --> FT{"Stated fact, or computed?"}
+    FT -->|"computed, tabular, relational"| TOOL["Query tool — SQL, graph, deterministic"]
+    FT -->|"stated"| RET{"Retrieval"}
+    RET -->|"missing"| REF["Refuse"]
+    RET -->|"contradictory"| ESC["Escalate"]
+    RET -->|"clean / insufficient / stale / redundant / out-of-scope"| GATE{"Answerability gate"}
+    GATE -->|"absent, or refuses though covered"| REF
+    GATE -->|"unclear"| LOOP["Re-retrieve"]
+    LOOP -->|"attempts left"| RET
+    LOOP -->|"cap hit"| REF
+    GATE -->|"covers"| DRAFT["Draft"]
+    DRAFT --> VER{"Citation verification"}
+    VER -->|"entail — or a judge that errs"| SHIP["Ship — E-grounded"]
+    VER -->|"neutral / contradict / no citation"| FIX{"Block or flag?"}
+    FIX -->|"attempts left"| DRAFT
+    FIX -->|"cap hit"| REF
+    FIX -->|"flag"| FLAG["Ship — E-grounding failed"]
+    SHIP -.-> C12["ideal + faithful to a bad source"]
+    FLAG -.-> C34["lucky parametric recall + classic hallucination"]
+```
+
+**Every branch, and what it does**
+
+| Level | Branch | Control | Reaches |
+|---|---|---|---|
+| **Fact type** | stated fact | retrieval | the tree below |
+| | computed, tabular, relational | **query tool** — SQL, graph, or deterministic (M8) | an answer that never enters this tree |
+| **Retrieval** | clean *(on-target, current, consistent, complete, non-duplicated)* | — | the gate |
+| | **Missing** | answerability | refusal |
+| | **Insufficient** | sufficiency check *(upstream)* | the gate — **which cannot see it** |
+| | **Redundant** | diversity re-rank *(upstream)* | the gate |
+| | **Stale** | re-index *(upstream)*; its answer-side signal is the "as of" stamp | the gate |
+| | **Contradictory** | conflict detection | escalation |
+| | **Out-of-scope** | citation verification — the chunk looks adjacent until the claim is checked | the gate, then verification |
+| **Gate** | covers | — | draft |
+| | absent | answerability | refusal |
+| | refuses though covered | **none** — this is *over-refusal* | refusal, though the answer was there |
+| | unclear | — | re-retrieve, capped → refusal |
+| **Draft** | from the evidence | — | verification |
+| | from the model's memory | — | verification — the **no-citation** branch fires first |
+| **Verification** | `entail` | — | **ship — `E`-grounded** |
+| | `entail` from a judge that erred | **none** — the judge is a model too (Discussion 01 §5 step 6) | **ship — `E`-grounded, wrongly** |
+| | `neutral` | cited, but the chunk does not back the claim | block or flag |
+| | `contradict` *(the claim contradicts its cited chunk — distinct from the **Contradictory** class, which is chunk-against-chunk)* | the chunk negates the claim | block or flag |
+| | no citation | the rule — *every claim carries a citation* — checked **before** the judge | block or flag |
+| | phantom citation | closed when citations are API-managed; otherwise a fabricated source | block or flag |
+| **Gate on failure** | block | — | regenerate, capped → refusal |
+| | **flag** | — | **ship — `E`-grounding failed** |
+
+- **A deviation from Discussion 01 §5–§6:** the discussion routes `contradict` → *block*. This tree allows `block` **or** `flag`, and a flag still ships — which is the only way either ungrounded cell is reachable at all.
+- **The classes are per-chunk, not per-set, and they co-occur.** Trace 3's cached FAQ is *Contradictory* **and** *Stale*; trace 5's 2023 page is *Stale* **and** it contradicts the current policy sitting in `E`. The edges above are drawn exclusive for legibility; a real `E` can carry several defects at once, and each needs its own control.
+
+**The traces** — each labelled with the terminal it reaches and the 2×2 cell it lands in
+
+1. **The ideal path → ship — `E`-grounded → *ideal*.** `E` holds the current refund and cancellation policy, both on-topic and current. The gate says *covers*. The draft cites both chunks and verification returns `entail` on every claim. → **a correct answer.**
+
+2. **Missing → refusal.** The index returns three chunks about *order tracking* — nothing on cancellations. The gate finds no evidence covering the question and refuses: *"I don't have that in our policy."* No claim is made, so nothing is verified and nothing can be wrong. → **the safe terminal.**
+
+3. **Contradictory → escalation.** `E` returns the current refund policy (*30 days, full*) **and** a cached FAQ (*14 days, pro-rated*). Conflict detection fires **before** generation rather than letting the model referee. → **a human decides.**
+
+4. **Insufficient → ship — `E`-grounded → *faithful to a bad source*.** `E` holds the refund policy but **not** the mid-cycle exclusion, which lives on a page the retriever never returned. The gate asks *"is there evidence?"* — yes — so it passes. The draft over-generalizes: *"mid-cycle cancellations are refundable within 30 days."* The chunk **does** back it, and the chunk is current. → **shipped, wrong, with every control firing.** The control that would have caught it is a sufficiency check — *"is everything the answer needs present?"* — asked upstream.
+
+5. **Stale → ship — `E`-grounded → *faithful to a bad source*.** `E` returns a **cached 2023 page**: *"Cancellations within 14 days get a pro-rated refund."* The current policy says 30 days, full. The model quotes the cached page faithfully. Verification returns `entail` — the chunk *does* back the claim. Verification asks whether the chunk backs the claim, never whether the chunk is true. → **shipped, wrong.**
+
+6. **Out-of-scope → `neutral` → bounded re-retrieve → refusal.** `E` returns pages about *annual plans* — topically adjacent, not answering, which is the **Out-of-scope** signature. The gate passes it. The draft asserts *"cancellations within 30 days get a full refund"* — **true**, but with no chunk behind it, so the **no-citation** branch fires before the judge runs. → re-retrieve → still nothing → cap. → **a refusal.** The customer would have been right by luck; the same machinery ships equally confident falsehoods.
+
+7. **Contradict → block → regenerate → ship — `E`-grounded → *ideal*.** The opening scene's case: the draft cites the refund policy for a claim it does not make, verification returns `contradict`, and the claim is blocked. The agent regenerates from the actual chunk and the replacement answer passes. → **a correct answer.**
+
+8. **Contradict → flag → ship — `E`-grounding failed → *classic hallucination* or *lucky parametric recall*.** The same wrong claim, with the gate configured to **flag** instead of block, ships with a warning attached. This single edge carries **both** ungrounded cells: *classic hallucination* if the unbacked claim is false, *lucky parametric recall* if it happens to be true. **The flag cannot tell them apart** — which is why they are one terminal.
+
+9. **Redundant → ship — `E`-grounded.** The corpus holds the exclusion clause on one page and **four near-duplicates** of the headline policy on the others. The retriever returns only the duplicate cluster, so the exclusion is **displaced** by restatements of what the agent already had. The gate sees coverage — it is reading real policy text — and the over-generalized answer ships. It lands in *ideal* if the surviving text happens to answer the question, and *faithful to a bad source* if the displaced clause was the one that mattered. **Nothing downstream counts duplicates**, which is why this row's control is a diversity re-rank and not a check.
+
+**What the tree exposes**
+
+- The gate is written as a **boolean** in the answerability section, but the judgment it rests on is **three-valued**. "Unclear" must collapse into one of the two, and collapsing it into *covers* is exactly how **Insufficient** gets through.
+- Three of the six retrieval classes — **Insufficient**, **Redundant** and **Stale** — have **no answer-side control.** Their fixes are upstream, which is why the table gives them upstream responses; Stale's only answer-side artefact is an "as of" stamp, which informs a human rather than gating anything.
+- **The customer-visible tree is two edges, not four.** `entail` ships; a failed check ships *or* blocks depending on one configuration flag. The harness separates *grounded* from *ungrounded* and **cannot separate *sound* from *unsound*** — so each ship edge carries two 2×2 cells, and the pairing is the module's whole thesis in one picture.
+- **`faithful to a bad source` is reachable with every control working as designed.** Verification answered *"does the chunk back the claim?"*; nobody asked *"is the chunk true?"* — and trace 4 shows the same cell reached with a chunk that is *current and true*, when the claim over-reaches it.
+- The tree has **three cycles**: re-retrieve → retrieval and re-retrieve → draft → verify are bounded by the re-retrieve cap; **regenerate → draft → verify is bounded only by the block cap.** Unbounded, that cycle does not terminate — the "failure modes of any loop" this module warns about.
+- The difference between the opening scene's agent and this one is **not** a better model.
+
+> **Failure mode (the closing one):** building retrieval and answerability and stopping there. The tree then has one ship edge, and that edge carries both the best and the worst outcome the module can produce — a correct answer, and a faithful quote of a stale page — with nothing downstream able to tell them apart.
 
 ---
 
@@ -262,7 +408,7 @@ flowchart LR
     2. **Retrieval decision.** Recall or precision? State your answer and defend it in one sentence, using the "absence is safe, false confidence is expensive" argument.
     3. **Answerability.** Write the refusal rule you'd give the agent, and the *enforcement* mechanism that backs it (not just the instruction).
     4. **Citation verification.** Which claims get the entailment check — every claim, or only a subset? Name the subset by *consequence*, and state what the gate does on `contradict` vs. `neutral`.
-    5. **List what could go wrong per strategy.** For each of the four failure modes (missing / stale / contradictory / out-of-scope), write the concrete scenario in *your* domain and the control that catches it. If a control is missing, say so explicitly — that's the point of the exercise.
+    5. **List what could go wrong per strategy.** For each of the six failure modes (missing / insufficient / redundant / stale / contradictory / out-of-scope), write the concrete scenario in *your* domain and the control that catches it. If a control is missing, say so explicitly — that's the point of the exercise.
     6. **The wrong-tool check.** Is there any fact in your domain that retrieval should *not* be handling (tabular, relational, derived)? Name it and say which tool should own it instead.
 - **Why this exercise matters.**
     - This is the module where "we have RAG" stops being a sentence and becomes a *design*: named decisions (chunking, precision, answerability, verification) each with a failure mode it exists to catch.
@@ -320,13 +466,13 @@ flowchart LR
 
 ### 4. The entailment judge is not a faithful "supports" oracle
 
-- The citation-verification engine rests on a judge returning `entail | contradict | neutral` and gating on `entail`.
-- The module already flags "the judge itself can err." The literature supports a stronger caveat: entailment is a *loose proxy* for "the chunk supports the claim," not the thing itself.
+- The citation-verification engine (Discussion 01 §5) rests on a judge returning `entail | contradict | neutral` and gating on `entail`.
+- The procedure's own caveat — the judge itself can err — sits at Discussion 01 §5 step 6. The literature supports a stronger version: entailment is a *loose proxy* for "the chunk supports the claim," not the thing itself.
 - **Attribution and entailment are different quantities.** Attributed-QA evaluation finds automatic attribution metrics correlate only moderately with human judgments of whether a citation actually supports a claim.[bohnet-aqa](#bohnet-aqa) Generating text with citations and *checking* those citations are separate tasks, and the checking side remains open.[gao-alce](#gao-alce)
 - **Even the strong factuality meters are approximate.** FActScore's atomic-fact decomposition reports "less than a 2% error rate" — but only against a *chosen* knowledge source; it measures support-by-that-source, not ground truth.[min-factscore](#min-factscore) SelfCheckGPT detects hallucination by sampling consistency, which catches *some* unsupported claims and misses others.[manakul-selfcheckgpt](#manakul-selfcheckgpt)
 - **The NLI substrate is a specific, imperfect task.** The `entail/contradict/neutral` triad comes from NLI benchmarks never designed to judge *document-grounded* attribution, and their labels do not capture "the chunk mentions the entity but doesn't state the number" — precisely the opening scene's failure.[bowman-snli](#bowman-snli), [thorne-fever](#thorne-fever)
 - **Consequence.** The entailment gate is a reasonable *first pass*, not a guarantee.
-    - The module's step 6 ("the judge can err") is doing more work than it appears: it is the reason the gate is a *flag*, not a *proof*.
+    - Discussion 01 §5 step 6 ("the judge can err") is doing more work than it appears: it is the reason the gate is a *flag*, not a *proof*.
     - Where wrongness is expensive, a judge's `entail` should still route to a human or a second, independent check.
 
 ### 5. Answerability trades one failure for another — over-refusal is real and measured
@@ -384,6 +530,8 @@ flowchart LR
 - <a id="cuconasu-power-of-noise"></a>[cuconasu-power-of-noise](#cuconasu-power-of-noise) · [**The Power of Noise: Redefining Retrieval for RAG Systems** — Florin Cuconasu, Giovanni Trappolini, Federico Siciliano, Simone Filice, Cesare Campagnano, Yoelle Maarek, Nicola Tonellotto, Fabrizio Silvestri](https://arxiv.org/pdf/2401.14887) — *SIGIR*, 2024. *cf.* — retrieval relevance and answer quality are not monotone.
 - <a id="niu-ragtruth"></a>[niu-ragtruth](#niu-ragtruth) · [**RAGTruth: A Hallucination Corpus for Developing Trustworthy Retrieval-Augmented Language Models** — Cheng Niu, Yuanhao Wu, Juno Zhu, Siliang Xu, Kashun Shum, Randy Zhong, Juntong Song, Tong Zhang](https://arxiv.org/pdf/2401.00396) — *ACL*, 2024. *cf.* — RAG still produces unsupported/contradictory claims.
 - <a id="yoran-robust-irrelevant"></a>[yoran-robust-irrelevant](#yoran-robust-irrelevant) · [**Making Retrieval-Augmented Language Models Robust to Irrelevant Context** — Ori Yoran, Tomer Wolfson, Ori Ram, Jonathan Berant](https://arxiv.org/pdf/2310.01558) — *ICLR*, 2024. *cf.* — retrieval augmentation can harm performance; precision filtering trades away relevance.
+- <a id="joren-sufficient-context"></a>[joren-sufficient-context](#joren-sufficient-context) · [**Sufficient Context: A New Lens on Retrieval Augmented Generation Systems** — Hailey Joren, Jianyi Zhang, Chun-Sung Ferng, Da-Cheng Juan, Ankur Taly, Cyrus Rashtchian](https://arxiv.org/pdf/2411.06037) — *ICLR*, 2025. — separates *"the context itself is insufficient to answer the query"* from *"the model failed to use the context,"* and finds stronger models *"often output incorrect answers instead of abstaining when the context is not"* sufficient. Owns the **sufficiency** check the *Insufficient* row needs.
+- <a id="barnett-seven-failure-points"></a>[barnett-seven-failure-points](#barnett-seven-failure-points) · [**Seven Failure Points When Engineering a Retrieval Augmented Generation System** — Scott Barnett, Stefanus Kurniawan, Srikanth Thudumu, Zach Brannelly, Mohamed Abdelrazek](https://arxiv.org/pdf/2401.05856) — *CAIN*, 2024. — a failure taxonomy from three production RAG case studies (Deakin University), and the named precedent for the *Insufficient* row: **FP3 "Not in Context"** — "documents with the answer were retrieved from the database but did not make it into the context"; **FP6 "Incorrect Specificity"** — the answer "is not specific enough or is too specific"; and **FP7 "Incomplete"**, explicitly *"not incorrect"* yet missing information — sound but partial.
 - <a id="shi-irrelevant-context"></a>[shi-irrelevant-context](#shi-irrelevant-context) · [**Large Language Models Can Be Easily Distracted by Irrelevant Context** — Freda Shi, Xinyun Chen, Kanishka Misra, Nathan Scales, David Dohan, Ed Chi, Nathanael Schärli, Denny Zhou](https://arxiv.org/pdf/2302.00093) — *ICML*, 2023.
 - <a id="shi-context-aware-decoding"></a>[shi-context-aware-decoding](#shi-context-aware-decoding) · [**Trusting Your Evidence: Hallucinate Less with Context-aware Decoding** — Weijia Shi, Xiaochuang Han, Mike Lewis, Yulia Tsvetkov, Luke Zettlemoyer, Scott Wen-tau Yih](https://arxiv.org/pdf/2305.14739) — arXiv:2305.14739, 2023. *cf.* — prior knowledge wins unless decoding is biased toward context; the "model can override the evidence" mechanism.
 - <a id="gao-rag-survey"></a>[gao-rag-survey](#gao-rag-survey) · [**Retrieval-Augmented Generation for Large Language Models: A Survey** — Yunfan Gao, Yun Xiong, Xinyu Gao, Kangxiang Jia, Jinliu Pan, Yuxi Bi, Yi Dai, Jiawei Sun, Meng Wang, Haofen Wang](https://arxiv.org/pdf/2312.10997) — arXiv:2312.10997, 2023 (preprint).
@@ -406,6 +554,14 @@ flowchart LR
 - <a id="nguyen-hierarchical-chunking"></a>[nguyen-hierarchical-chunking](#nguyen-hierarchical-chunking) · [**Enhancing Retrieval Augmented Generation with Hierarchical Text Segmentation Chunking** — Hai Toan Nguyen, Tien Dat Nguyen, Viet Ha Nguyen](https://arxiv.org/pdf/2507.09935) — arXiv:2507.09935, 2025 (preprint).
 - <a id="sarthi-raptor"></a>[sarthi-raptor](#sarthi-raptor) · [**RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval** — Parth Sarthi, Salman Abdullah, Aditi Tuli, Shubh Khanna, Anna Goldie, Christopher D. Manning](https://arxiv.org/pdf/2401.18059) — *ICLR*, 2024.
 - <a id="stepanyan-biomedical-retrieval"></a>[stepanyan-biomedical-retrieval](#stepanyan-biomedical-retrieval) · [**A Systematic Study of Biomedical Retrieval Pipeline Trade-offs in Performance and Efficiency** — Hayk Stepanyan, Matthew McDermott](https://arxiv.org/pdf/2604.20853) — arXiv:2604.20853, 2026 (preprint). *cf.* — corpus choice is reported to dominate chunking and indexing decisions.
+
+### Retrieval redundancy and diversity
+
+- <a id="ross-retriever-redundancy"></a>[ross-retriever-redundancy](#ross-retriever-redundancy) · [**How retriever redundancy and diversity impact RAG effectiveness** — Jonathan J Ross, Bevan Koopman, Anton van der Vegt, Guido Zuccon](https://arxiv.org/pdf/2608.13956) — arXiv:2608.13956, 2026 (preprint). — owns the controlled result behind the *Redundant* row: **duplicate** and **LLM-paraphrased** document sets give **no significant correctness gain**, while **diverse** sets improve correctness by **17%–47%** *at equal budget*, with the gain driven by genre diversity rather than by more answer-bearing documents. Uses a synthetic dataset so prior parametric knowledge cannot answer the question — the answer must come from the retrieved set.
+- <a id="cho-rare"></a>[cho-rare](#cho-rare) · [**RARE: Redundancy-Aware Retrieval Evaluation Framework for High-Similarity Corpora** — Hanjun Cho, Jay-Yoon Lee](https://aclanthology.org/2026.acl-long.923.pdf) — *ACL*, 2026. — owns the **measurement** side: standard QA benchmarks "assume distinct documents with minimal overlap," so retrievers look sound until they meet genuinely redundant corpora (financial reports, legal codes, patents). A strong baseline falls from **66.4% PerfRecall@10 on 4-hop General-Wiki to 5.0–27.9%** at 4-hop depth on redundant corpora.
+- <a id="khurshid-context-bubble"></a>[khurshid-context-bubble](#khurshid-context-bubble) · [**Structure and Diversity Aware Context Bubble Construction for Enterprise Retrieval Augmented Systems** — Amir Khurshid, Abhishek Sehgal](https://arxiv.org/pdf/2601.10681) — arXiv:2601.10681, 2026 (preprint). — owns the **control**: top-k selection "causes fragmentation in information graphs, over-retrieval, and duplication of content alongside insufficient query context." Its remedy balances query relevance, *marginal coverage*, and a redundancy penalty under a token budget, and its ablation shows that removing the diversity constraint increases "redundant **or incomplete** context" — the direct link between this row and *Insufficient*.
+- <a id="leanrag"></a>[leanrag](#leanrag) · [**LeanRAG: Knowledge-Graph-Based Generation with Semantic Aggregation and Hierarchical Retrieval** — Yaoze Zhang, Rong Wu, Pinlong Cai, Xiaoman Wang, Guohang Yan, Song Mao, Ding Wang, Botian Shi](https://arxiv.org/pdf/2508.10391) — *AAAI*, 2026. — bounds what a diversity-aware retriever can recover: semantic aggregation plus structure-guided retrieval **cut retrieval redundancy by 46%** while improving response quality.
+- <a id="lin-retrieval-diversity"></a>[lin-retrieval-diversity](#lin-retrieval-diversity) · [**Beyond More Context: Retrieval Diversity Boosts Multi-Turn Intent Understanding** — Zhiming Lin](https://arxiv.org/pdf/2510.17940) — arXiv:2510.17940, 2025 (preprint). — isolates *set-level diversity* from "just add context" using **budget-matched, position-randomized** prompts: diversity-aware selection wins at equal token budget, which is why redundancy is a *displacement* failure rather than a token-count failure.
 
 ### Agentic and adaptive RAG
 
