@@ -104,12 +104,12 @@ Directly:
 
 > *"How do you carry out 'the claim is supported by it'?"*
 
-1. Split the answer into **atomic claims** (structured list, not prose).
+1. Split the answer into **atomic claims** (structured list, not prose).[min-factscore](#min-factscore)
 2. Fetch each claim's **cited chunk(s)**.
-3. Run an **entailment check**: judge model receives `(claim, chunk)` → `entail | contradict | neutral`; pass only on `entail`.
+3. Run an **entailment check**: judge model receives `(claim, chunk)` → `entail | contradict | neutral`; pass only on `entail`.[bowman-snli](#bowman-snli), [thorne-fever](#thorne-fever)
 4. `contradict` → block; `neutral` → escalate or regenerate.
 5. **Pre-filter** obvious non-matches deterministically (keyword/entity overlap) before invoking the judge.
-6. Caveat: the judge itself can err — judge failure modes are M12 territory.
+6. Caveat: the judge itself can err — judge failure modes are M12 territory.[manakul-selfcheckgpt](#manakul-selfcheckgpt)
 
 ---
 
@@ -130,6 +130,8 @@ Directly:
 - **Routing rule:** `entail` → pass · `contradict` → block · `neutral` → **escalate to joint-source** (not fail). High-consequence claims skip straight to joint-source.
 
 **When one tier suffices:** almost-always-extractive answers → surface-only; almost-always-derived answers → joint-source as the floor. **Start surface-only, measure the false-positive rate, add the escalation tier only when data says so.** The "surface" tier usually carries a deterministic keyword/entity pre-filter beneath the model judge — three tiers total, each escalating only on ambiguity.
+
+- **The cost recurs on every answer, not once.** Each check is paid per answer — a judge call per claim, or per answer — which is what makes the tiering a *coverage* decision as much as an architecture one.
 
 ---
 
@@ -180,3 +182,14 @@ Decompose "materiality": *did the event cause a delay? (codable) → how long? (
 | §3 caching ≠ grounding | M4 Context Engineering I |
 | §4–§6 entailment, citation resolution, engine architecture | M5 Retrieval & Grounding · M12 Evaluation |
 | §7 derivation, Case A/B, decomposition | M8 Tool Interfaces · M10 Orchestration · M12 · M15 |
+
+---
+
+## Bibliography
+
+*Citations use stable identifier keys, not position numbers. Every inline citation is written `[key](#key)` and resolves to the bullet carrying that key, so entries can be added, removed or reordered without rewriting a citation. Every entry hyperlinks to the paper's PDF. Scope note: these entries source the §5 procedure; claims elsewhere in this discussion are not yet sourced.*
+
+- <a id="min-factscore"></a>[min-factscore](#min-factscore) · [**FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation** — Sewon Min, Kalpesh Krishna, Xinxi Lyu, Mike Lewis, Wen-tau Yih, Pang Wei Koh, Mohit Iyyer, Luke Zettlemoyer, Hannaneh Hajishirzi](https://arxiv.org/pdf/2305.14251) — *EMNLP*, 2023. — owns the **atomic-fact decomposition** behind step 1: a generation is split into atomic facts and scored by the fraction supported by a chosen knowledge source.
+- <a id="bowman-snli"></a>[bowman-snli](#bowman-snli) · [**A Large Annotated Corpus for Learning Natural Language Inference** — Samuel R. Bowman, Gabor Angeli, Christopher Potts, Christopher D. Manning](https://arxiv.org/pdf/1508.05326) — *EMNLP*, 2015. — owns the **`entailment / contradiction / neutral` label set** step 3 borrows, and the sentence-pair task it was built for.
+- <a id="thorne-fever"></a>[thorne-fever](#thorne-fever) · [**FEVER: a Large-scale Dataset for Fact Extraction and VERification** — James Thorne, Andreas Vlachos, Christos Christodoulopoulos, Arpit Mittal](https://arxiv.org/pdf/1803.05355) — *NAACL*, 2018. — owns the **claim-against-evidence verification** framing step 3 is an instance of.
+- <a id="manakul-selfcheckgpt"></a>[manakul-selfcheckgpt](#manakul-selfcheckgpt) · [**SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models** — Potsawee Manakul, Adian Liusie, Mark J. F. Gales](https://arxiv.org/pdf/2303.08896) — *EMNLP*, 2023. — a **judge that is itself a model with its own failure modes**, which is the caveat in step 6.
