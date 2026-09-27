@@ -289,7 +289,7 @@ flowchart LR
 
 ## Grounding beyond RAG
 
-- Retrieval is the right tool for *unstructured text*.
+- Retrieval (finding *stated* facts) is the right tool for *unstructured text*.
 - It is the wrong tool for three things, and using it anyway is a classic design smell:
 
 | The data is… | Use instead | Why |
@@ -308,18 +308,25 @@ flowchart LR
 - The domain spine, walked as a **tree** rather than a single path: one question, every branch the harness can take, and the terminal each branch reaches.
     - The question: *"Can I cancel mid-cycle for a pro-rated refund?"*
     - Four terminals are on this tree — refusal, escalation, **ship — `E`-grounded**, and **ship — `E`-grounding failed.** The last two are the only ones a customer reads as an answer, and **each covers two of the four 2×2 cells**, because the harness can separate grounded from ungrounded and cannot separate sound from unsound.
-    - One branch never enters the tree at all: a **computed** fact routes to a query tool, and retrieving it anyway is the wrong-tool failure this module names further down.
+    - **`E` has two producers, and both are evidence.** A query tool's result is not an answer — it is a row, a subgraph, or a computed value, which is precisely what a claim gets grounded on. So the computed branch **rejoins the same gate and the same verification** rather than leaving the tree, and it reaches the same four terminals.
+    - What is a wrong-tool failure is **retrieving** a computed fact — embedding-search for a number that SQL already knows. The fault is the mechanism mismatch, not using a tool.
+    - The query path needs an admission check, and it asks a **different question** from retrieval's. Retrieval asks *"is this chunk on-topic?"*; the query path asks *"did the query execute and return what was asked?"* — a wrong `WHERE`, a reversed traversal, a hallucinated column, or a tool error silently converted into a default.
 
 **The tree**
 
 ```mermaid
 flowchart TD
-    Q["Question"] --> FT{"Stated fact, or computed?"}
-    FT -->|"computed, tabular, relational"| TOOL["Query tool — SQL, graph, deterministic"]
-    FT -->|"stated"| RET{"Retrieval"}
-    RET -->|"missing"| REF["Refuse"]
+    Q["Question"] --> FT{"Stated fact, computed fact, or both?"}
+    FT -->|"stated — or both"| RET{"Retrieval"}
+    FT -->|"computed — or both"| TOOL["Query tool — SQL, graph, deterministic"]
+    TOOL --> QOK{"Query executed and returned what was asked?"}
+    QOK -->|"error, empty, or wrong projection"| REQ["Re-query"]
+    REQ -->|"attempts left"| TOOL
+    REQ -->|"cap hit"| REF["Refuse"]
+    RET -->|"missing"| REF
     RET -->|"contradictory"| ESC["Escalate"]
     RET -->|"clean / insufficient / stale / redundant / out-of-scope"| GATE{"Answerability gate"}
+    QOK -->|"yes"| GATE
     GATE -->|"absent, or refuses though covered"| REF
     GATE -->|"unclear"| LOOP["Re-retrieve"]
     LOOP -->|"attempts left"| RET
@@ -339,8 +346,10 @@ flowchart TD
 
 | Level | Branch | Control | Reaches |
 |---|---|---|---|
-| **Fact type** | stated fact | retrieval | the tree below |
-| | computed, tabular, relational | **query tool** — SQL, graph, or deterministic (M8) | an answer that never enters this tree |
+| **Fact type** | stated fact — or both | retrieval | `E`, then the gate |
+| | computed, tabular, relational — or both | **query tool** — SQL, graph, or deterministic (M8) | `E`, then the gate |
+| **Query** | returned what was asked | — | the gate — a tool result is evidence like any other |
+| | error, empty, or wrong projection | **re-query**, capped | re-query → refusal; **never a default value** |
 | **Retrieval** | clean *(on-target, current, consistent, complete, non-duplicated)* | — | the gate |
 | | **Missing** | answerability | refusal |
 | | **Insufficient** | sufficiency check *(upstream)* | the gate — **which cannot see it** |
@@ -386,13 +395,20 @@ flowchart TD
 
 9. **Redundant → ship — `E`-grounded.** The corpus holds the exclusion clause on one page and **four near-duplicates** of the headline policy on the others. The retriever returns only the duplicate cluster, so the exclusion is **displaced** by restatements of what the agent already had. The gate sees coverage — it is reading real policy text — and the over-generalized answer ships. It lands in *ideal* if the surviving text happens to answer the question, and *faithful to a bad source* if the displaced clause was the one that mattered. **Nothing downstream counts duplicates**, which is why this row's control is a diversity re-rank and not a check.
 
+10. **Computed fact → empty result → re-query → cap → refusal.** The question needs the customer's cycle dates, so the agent calls the account tool. The generated query filters on a column that does not exist, and the wrapper returns **zero rows** rather than raising. The gate has no evidence for the computed half of the question, so it routes to **re-query**; two further attempts produce the same empty set. → **a refusal** — the safe terminal, though the data was there and the question was answerable. **The query path's characteristic failure is not irrelevance; it is a query that ran, returned nothing, and looked like an answer.**
+
+11. **Computed fact → error swallowed into a default → ship — `E`-grounded → *faithful to a bad source*.** This is Discussion 01 §1's fifth worked example, which now has a home on the tree. The policy half of the question retrieved cleanly; the tool call errored and the wrapper converted the error into `0.00`. The draft cites the tool result, so verification returns `entail` — the value *is* in the returned evidence. **Nothing downstream can see the wrapper.** → **shipped, wrong, with every control firing**, landing in the same cell as the stale trace for the same reason: the control asked whether the evidence backs the claim, never whether the evidence is true.
+
+12. **Computed fact → correct result misread → `contradict` → block → ship — `E`-grounded → *ideal*.** The tool returns `42.50`; the draft says *"\$45.20"*. Verification compares the claim against the tool result and returns `contradict` — the branch fires on a **computed** `e` exactly as it does on a chunk. The claim is blocked and regenerated. → **a correct answer**, and the proof that merging the query path into verification is not ceremony: the value was right, and the sentence about it was still wrong.
+
 **What the tree exposes**
 
 - The gate is written as a **boolean** in the answerability section, but the judgment it rests on is **three-valued**. "Unclear" must collapse into one of the two, and collapsing it into *covers* is exactly how **Insufficient** gets through.
 - Three of the six retrieval classes — **Insufficient**, **Redundant** and **Stale** — have **no answer-side control.** Their fixes are upstream, which is why the table gives them upstream responses; Stale's only answer-side artefact is an "as of" stamp, which informs a human rather than gating anything.
 - **The customer-visible tree is two edges, not four.** `entail` ships; a failed check ships *or* blocks depending on one configuration flag. The harness separates *grounded* from *ungrounded* and **cannot separate *sound* from *unsound*** — so each ship edge carries two 2×2 cells, and the pairing is the module's whole thesis in one picture.
 - **`faithful to a bad source` is reachable with every control working as designed.** Verification answered *"does the chunk back the claim?"*; nobody asked *"is the chunk true?"* — and trace 4 shows the same cell reached with a chunk that is *current and true*, when the claim over-reaches it.
-- The tree has **three cycles**: re-retrieve → retrieval and re-retrieve → draft → verify are bounded by the re-retrieve cap; **regenerate → draft → verify is bounded only by the block cap.** Unbounded, that cycle does not terminate — the "failure modes of any loop" this module warns about.
+- The tree has **four cycles**: re-query → tool and re-retrieve → retrieval are bounded by their own caps; re-retrieve → draft → verify is bounded by the re-retrieve cap; and **regenerate → draft → verify is bounded only by the block cap.** Unbounded, that cycle does not terminate — the "failure modes of any loop" this module warns about.
+- **The computed branch is not a side door.** Before the merge it reached a customer with no gate, no verification and no 2×2 cell — an unguarded fifth terminal in a tree whose whole claim is that every ship edge carries two cells. Now the query result is an `e` like any other, and the branch's own control is the **query check**: did this execute and return what was asked.
 - The difference between the opening scene's agent and this one is **not** a better model.
 
 > **Failure mode (the closing one):** building retrieval and answerability and stopping there. The tree then has one ship edge, and that edge carries both the best and the worst outcome the module can produce — a correct answer, and a faithful quote of a stale page — with nothing downstream able to tell them apart.
