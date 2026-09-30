@@ -6,6 +6,36 @@
 
 ---
 
+## Contents
+
+- [Opening scene — the policy that lived only in prose, and the gate that was never built](#opening-scene--the-policy-that-lived-only-in-prose-and-the-gate-that-was-never-built)
+- [The instruction is the agent's constitution](#the-instruction-is-the-agents-constitution)
+- [The instruction surface in ADK](#the-instruction-surface-in-adk)
+- [The instruction is a designed artifact, not prose](#the-instruction-is-a-designed-artifact-not-prose)
+- [The three-way conflict: who wins?](#the-three-way-conflict-who-wins)
+- [The three failure modes of instruction design](#the-three-failure-modes-of-instruction-design)
+- [Instruction testing: regression-testing a policy change](#instruction-testing-regression-testing-a-policy-change)
+- [Worked example: the ops-automation agent](#worked-example-the-ops-automation-agent)
+- [Design exercise](#design-exercise)
+- [Sources (ADK docs)](#sources-adk-docs)
+- [Bibliography](#bibliography)
+    - [Framework documentation (industry docs)](#framework-documentation-industry-docs)
+    - [Where an agent's policy comes from: post-training, vendor policy, and the instruction](#where-an-agents-policy-comes-from-post-training-vendor-policy-and-the-instruction)
+    - [The instruction as a ranked channel: hierarchy and precedence](#the-instruction-as-a-ranked-channel-hierarchy-and-precedence)
+    - [The instruction as an authored artifact: design, search, and compilation](#the-instruction-as-an-authored-artifact-design-search-and-compilation)
+    - [The trusted-channel boundary: injection and separation](#the-trusted-channel-boundary-injection-and-separation)
+    - [Enforcement outside the prose: capability boundaries](#enforcement-outside-the-prose-capability-boundaries)
+    - [Testing a policy: behavioral, adversarial, and drift tests](#testing-a-policy-behavioral-adversarial-and-drift-tests)
+    - [Instruction following under load: density, composition, and turns](#instruction-following-under-load-density-composition-and-turns)
+    - [Prompt sensitivity: formatting, order, and determinism](#prompt-sensitivity-formatting-order-and-determinism)
+    - [Salience, position, and attention](#salience-position-and-attention)
+    - [Underspecification, ambiguity, and confabulation](#underspecification-ambiguity-and-confabulation)
+    - [The constitution metaphor and its owner](#the-constitution-metaphor-and-its-owner)
+    - [Stable prefixes and prompt caching](#stable-prefixes-and-prompt-caching)
+    - [Unsupported claims and own synthesis](#unsupported-claims-and-own-synthesis)
+
+---
+
 ## Opening scene — the policy that lived only in prose, and the gate that was never built
 
 - **Setup** — an ops-automation agent with one hard rule.

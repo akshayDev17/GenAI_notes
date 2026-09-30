@@ -1,0 +1,7 @@
+[
+  {"request": "Please refund the duplicate charge on order 987", "next_action": "refund_agent"},
+  {"request": "Our service is down and customers cannot log in", "next_action": "outage_agent"},
+  {"request": "Draft a case brief for SC-2025-114", "next_action": "case_agent"},
+  {"request": "What is the forecast for Mumbai tomorrow?", "next_action": "weather_agent"},
+  {"request": "Write me a limerick about databases", "next_action": "no_agent"}
+]
