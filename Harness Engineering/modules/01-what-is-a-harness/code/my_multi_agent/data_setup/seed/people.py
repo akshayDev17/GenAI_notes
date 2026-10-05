@@ -64,7 +64,7 @@ class PeopleSeeder(Seeder):
     def seed(self, ctx: SeedContext) -> None:
         self._seed_salary_bands(ctx)
         employees = self._build_employees(ctx)
-        self._apply_edge_cases(ctx, employees)
+        ambiguous_ids = self._apply_edge_cases(ctx, employees)
 
         ctx.db.insert_many(
             "employees",
@@ -80,6 +80,8 @@ class PeopleSeeder(Seeder):
         ctx.publish(
             "terminated_employee_ids", [e.emp_id for e in employees if e.status == "terminated"]
         )
+        # The two active employees who share a name, so other clusters can build name-collision cases.
+        ctx.publish("ambiguous_employee_ids", ambiguous_ids)
 
     def _seed_salary_bands(self, ctx: SeedContext) -> None:
         rows = [(prof, low, high) for prof, (low, high, _) in self._BANDS.items()]
@@ -143,12 +145,26 @@ class PeopleSeeder(Seeder):
                 names.append(candidate)
         return names
 
-    def _apply_edge_cases(self, ctx: SeedContext, employees: list[_Employee]) -> None:
-        """Rows that tools and agents need to be tested against."""
+    @staticmethod
+    def _nearest_active(
+        employees: list[_Employee], index: int, exclude: _Employee | None = None
+    ) -> _Employee:
+        """The first active employee at or after ``index``, wrapping around the list."""
+        for employee in employees[index:] + employees[:index]:
+            if employee.status == "active" and employee is not exclude:
+                return employee
+        raise RuntimeError("No active employee available for the duplicate-name edge case.")
+
+    def _apply_edge_cases(self, ctx: SeedContext, employees: list[_Employee]) -> list[int]:
+        """Rows that tools and agents need to be tested against.
+
+        Returns the ids of the two employees who share a name.
+        """
         rng = ctx.rng
 
-        # Two different people with the same name, in different cities.
-        first, second = employees[len(employees) // 8], employees[(5 * len(employees)) // 8]
+        # Two different, active people with the same name, in different cities.
+        first = self._nearest_active(employees, len(employees) // 8)
+        second = self._nearest_active(employees, (5 * len(employees)) // 8, exclude=first)
         first.emp_name = second.emp_name = self._DUPLICATE_NAME
         if second.city_id == first.city_id:
             other_city = next(c for c in ctx.require("city_ids") if c != first.city_id)
@@ -161,3 +177,5 @@ class PeopleSeeder(Seeder):
             employee.salary = float(self._BANDS[employee.profession][1])
         for employee in rng.sample([e for e in active if e.salary > self._BANDS[e.profession][0]], 2):
             employee.salary = float(self._BANDS[employee.profession][0])
+
+        return [first.emp_id, second.emp_id]

@@ -26,6 +26,7 @@ An internal assistant for a mid-size company. One **orchestrator** receives a re
   - [Status in this repository](#status-in-this-repository)
 - [Data setup layout](#data-setup-layout)
 - [Database setup](#database-setup)
+- [Closed decisions](#closed-decisions)
 - [Open decisions](#open-decisions)
 
 ---
@@ -69,13 +70,14 @@ An internal assistant for a mid-size company. One **orchestrator** receives a re
   - Resolve names to ids (`emp_id`, `city_id`, `state_id`, `company_id`) for the other agents and the orchestrator.
 - **Tools**
   - `find_employee(name)` — match by name; return candidates when ambiguous.
-  - `get_employee(emp_id)` — profile (name, profession, location, company, status, dates).
-  - `salary_stats(group_by, filters)` — count, mean, median, min, max; groups under 3 people are suppressed.
+  - `get_employee(emp_id)` — profile (name, salary, profession, location, company, status, dates).
+  - `salary_stats(group_by, filters)` — count, mean, median, min, max.
   - `org_headcount(filters)` — headcount by state, city, company or profession.
   - `add_employee(...)` — create a record and return the new `emp_id`.
   - `terminate_employee(emp_id, end_date)` — mark as terminated.
+  - Exposed to other domains as a read-only function, not a table: `get_employee_summary(emp_id)` (name, profession, company, city), so other agents can show who someone is without reading People's tables.
 - **Rules**
-  - Salary is exposed only through aggregates, never per person (decision to confirm — see [Open decisions](#open-decisions)).
+  - Per-employee salary is returned on request with no authentication (see [Closed decisions](#closed-decisions)).
   - A new salary must fall inside the `salary_bands` range for the profession.
 
 ### Scheduling agent
@@ -85,12 +87,22 @@ An internal assistant for a mid-size company. One **orchestrator** receives a re
 - **Tools**
   - `check_leave_balance(emp_id)` — days left per leave type.
   - `request_leave(emp_id, start, end, type)` — create a request; refuses if the balance is insufficient.
+  - `list_leave_requests(status="pending", emp_id=None, start=None, end=None)` — requests with their `request_id`, employee name, type, dates, days and the employee's remaining balance.
+  - `decide_leave_request(request_id, decision, note)` — approve or reject one pending request.
+  - `decide_leave_requests(selectors, decision, note)` — the batch form; each selector is a `request_id` or an employee name, and the result has one entry per selector.
   - `find_free_room(capacity, start, end)` — rooms that fit and are unbooked for the whole range.
   - `book_room(room_id, start, end, emp_id)` — refuses on overlap with an active booking.
   - `cancel_booking(booking_id)` — mark a booking cancelled.
 - **Rules**
   - A booking never overlaps another active booking for the same room.
   - A leave request never exceeds the remaining balance.
+  - **Approving leave** (the decision tools above):
+    - Only `pending` requests can be decided. The balance is re-checked at approval, and the days are deducted then, in the same transaction as the status change.
+    - **Per-item outcomes:** one request's result never blocks another's. Each item comes back as `approved`, `rejected`, `already_decided`, `not_found`, `needs_clarification` or `failed` (with the reason, such as an insufficient balance). Ambiguity is a normal outcome, not an error.
+    - **Ambiguity is detected in code:** a name selector is matched exactly (ignoring case) against the pending requests. No match gives `not_found`, one match proceeds, and two or more give `needs_clarification` with the candidates. The agent never picks a candidate itself.
+    - **Candidates carry what tells them apart:** request id, employee id, name, profession, company, city, leave type and dates. Names and profile details come from People through a read-only function, not from its tables.
+    - **Human confirmation lives inside the tool**, before anything is written, and lists only the items that resolved. Items needing clarification are not part of it, and declining writes nothing.
+    - **Repeating a batch is safe:** items already decided come back as `already_decided`.
 
 ### IT agent
 
@@ -137,6 +149,11 @@ An internal assistant for a mid-size company. One **orchestrator** receives a re
   - Scheduling: `cancel_booking` for future bookings.
   - Finance: report open claims.
   - Orchestrator: `notify` a summary.
+- **Leave approval** ("Who is requesting leave?", then "Approve leave for X, Y and Z")
+  - Scheduling: `list_leave_requests` returns the pending requests; the orchestrator relays the list.
+  - Scheduling: `decide_leave_requests` is called with the names given. Names that match exactly one pending request resolve; the tool shows a confirmation of just those, then approves them.
+  - Names that match several pending requests, or none, are not approved. They come back as `needs_clarification` (with the candidates) or `not_found`.
+  - The final reply reports who was approved and asks about each unresolved name, showing what distinguishes the candidates. The follow-up ("the one in Austin") calls the tool again with the chosen `request_id`.
 - **Single-domain questions** go straight to one agent (for example, median pay for data engineers in Texas → People).
 
 ## Why these clusters
@@ -297,6 +314,10 @@ my_multi_agent/
   - an ambiguous name (two employees called Priya Shah in different cities) and a city shared by two states (Springfield);
   - salaries exactly on a band edge;
   - an employee with zero annual leave;
+  - pending leave requests for the approval tools to work on:
+    - both employees named Priya Shah have one pending request each, on different dates, so approving "Priya Shah" by name must come back as `needs_clarification`;
+    - at least one employee has two pending requests, so one name can match two requests;
+    - one employee with no annual leave left has a pending annual request, so approving it must fail on the balance;
   - every room booked at 10:00 on the first workday, plus cancelled bookings that must not block anything;
   - terminated employees who still hold a laptop;
   - employees at their category cap (every laptop holder, and 17 monitor holders with two);
@@ -362,10 +383,20 @@ sqlite3 data_setup/generated/ops.db "SELECT COUNT(*) FROM employees;"
 **When the agents start using it**
 - The default path is defined once, as `DEFAULT_DB_PATH` in `data_setup/build_db.py`. When the agent tools open the database, point them at the same location (or the path you passed to `--db`) from a single shared place, not a path copied into each tool.
 
+## Closed decisions
+
+- **Salary visibility:** per-employee salary is returned on request, with no authentication. This is a dummy system, so there is no access control.
+  - Consequence: `salary_stats` no longer suppresses small groups, because suppression has no privacy purpose when individual salaries are visible anyway.
+- **One database:** a single `ops.db` for all domains. Separate files per agent would make the independence explicit but add complexity this project does not need.
+- **Policy as code, not data:** see [Policy as code](#policy-as-code). Revisit with a dedicated policy language (OPA, Cedar, CEL, JSON Logic) only if non-developers need to edit policy.
+- **Where checks run:** policy is evaluated when a claim is submitted. A separate approval step for every claim is deliberately not modelled; only `needs_review` claims wait for a decision.
+- **Leave approval:** leave requests need a human approval.
+  - Tools: `list_leave_requests`, `decide_leave_request` and the batch `decide_leave_requests`, all on the Scheduling agent.
+  - Outcomes are per item, so one unresolved name never blocks the others.
+  - Ambiguity (a name matching several pending requests) is detected in code and returned as `needs_clarification`; the agent asks the user and never guesses.
+  - The CLI confirmation lists only the resolved items and is enforced inside the tool.
+  - Statuses move `pending` → `approved` or `rejected` through these tools; a requester's own cancellation stays with `cancelled`.
+
 ## Open decisions
 
-- **Salary visibility:** aggregates only, or per-employee salary for authorized requests too?
-- **One database or one per domain:** a single `ops.db` is simpler; separate files per agent make the independence explicit.
-- **Approvals:** whether leave requests need a human confirmation step in the CLI before they are applied. (For expense claims, the `needs_review` status and `review_claim` tool already cover it.)
-- **Policy as data versus policy as code:** decided in favour of code; see [Policy as code](#policy-as-code). Revisit with a dedicated policy language (OPA, Cedar, CEL, JSON Logic) only if non-developers need to edit policy.
-- **Where checks run:** policy is evaluated when a claim is submitted. A separate approval step for every claim is deliberately not modelled; only `needs_review` claims wait for a decision.
+- **When the leave balance is charged:** proposed as deduct-at-approval with a re-check, because two pending requests can together exceed the balance. The alternative is to reserve the days when the request is made. Not yet confirmed.
