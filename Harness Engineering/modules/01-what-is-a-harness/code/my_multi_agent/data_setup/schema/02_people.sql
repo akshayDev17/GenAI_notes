@@ -11,7 +11,10 @@ CREATE TABLE employees (
     status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'terminated')),
     start_date  TEXT NOT NULL,   -- ISO date
     end_date    TEXT,            -- ISO date; set if and only if terminated
-    CHECK ((status = 'terminated') = (end_date IS NOT NULL))
+    end_reason  TEXT CHECK (end_reason IN ('resignation', 'layoff', 'performance', 'retirement', 'other')),
+    end_note    TEXT,            -- optional free text from the person who terminated
+    CHECK ((status = 'terminated') = (end_date IS NOT NULL)),
+    CHECK ((status = 'terminated') = (end_reason IS NOT NULL))
 );
 
 CREATE INDEX idx_employees_city       ON employees(city_id);

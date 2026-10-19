@@ -28,7 +28,11 @@ CREATE TABLE it_tickets (
     category     TEXT NOT NULL CHECK (category IN ('account', 'hardware', 'access')),
     description  TEXT NOT NULL,
     status       TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'closed')),
-    created_at   TEXT NOT NULL   -- ISO datetime
+    created_at   TEXT NOT NULL,  -- ISO datetime
+    -- The unit a hardware ticket is about. Nullable because account and access tickets have no
+    -- asset; the CHECK makes it required for hardware tickets and forbidden for the others.
+    asset_id     INTEGER REFERENCES assets(asset_id),
+    CHECK ((category = 'hardware') = (asset_id IS NOT NULL))
 );
 
 CREATE INDEX idx_it_tickets_emp ON it_tickets(emp_id);

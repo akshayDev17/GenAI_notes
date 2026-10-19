@@ -43,7 +43,7 @@ class _ExampleRule:
 class FinanceSeeder(Seeder):
     name = "finance"
     tables = ("expense_limits", "expense_claims")
-    requires = ("active_employee_ids", "asset_categories", "asset_holdings")
+    requires = ("active_employee_ids", "asset_categories", "asset_holdings", "asset_assignments")
 
     _LIMITS: ClassVar[dict[str, float]] = {
         "travel": 1500.0,
@@ -81,6 +81,8 @@ class FinanceSeeder(Seeder):
     _OVER_LIMIT_CLAIMS = 3        # above the category cap, recorded as rejected
     _DUPLICATE_CLAIMS = 3         # laptop claims from employees who already hold one
     _PENDING_CHECK_CLAIMS = 3     # large standing-desk claims awaiting a check
+    _EXISTING_ASSET_CLAIMS = 3    # repair or accessory claims that name the unit (asset_id)
+    _REPAIRABLE: ClassVar[frozenset[str]] = frozenset({"laptop", "monitor", "phone", "keyboard"})
 
     def seed(self, ctx: SeedContext) -> None:
         ctx.db.insert_many(
@@ -134,19 +136,71 @@ class FinanceSeeder(Seeder):
                     claim.amount,
                     claim.category,
                     claim.asset_category_id,
+                    None,   # asset_id: random claims are purchases, so there is no unit yet
                     rng.choice(self._DESCRIPTIONS[claim.category]),
                     claim.status,
                     iso_datetime(submitted),
                 )
             )
+        rows += self._existing_asset_claims(ctx, len(rows) + 1, active, catalogue)
         ctx.db.insert_many(
             "expense_claims",
             (
-                "claim_id", "emp_id", "amount", "category", "asset_category_id",
+                "claim_id", "emp_id", "amount", "category", "asset_category_id", "asset_id",
                 "description", "status", "submitted_at",
             ),
             rows,
         )
+
+    def _existing_asset_claims(
+        self,
+        ctx: SeedContext,
+        first_id: int,
+        active: list[int],
+        catalogue: dict[int, tuple[str, int]],
+    ) -> list[tuple]:
+        """Claims about a unit the employee already holds (a repair or an accessory).
+
+        These name the unit through ``asset_id``, so they are not purchases and the asset-limit
+        rule does not apply. They are appended after the random claims and use a stream of
+        their own, so every other claim is unchanged.
+        """
+        cfg = ctx.config
+        asset_rng = random.Random(f"{cfg.seed}:existing-asset-claims")
+        assignments: dict[int, list[tuple[int, int]]] = ctx.require("asset_assignments")
+        active_set = set(active)
+
+        units = sorted(
+            (asset_id, emp_id, category_id)
+            for emp_id, held in assignments.items()
+            if emp_id in active_set
+            for asset_id, category_id in held
+            if catalogue[category_id][0] in self._REPAIRABLE
+        )
+
+        rows = []
+        for offset, (asset_id, emp_id, category_id) in enumerate(
+            asset_rng.sample(units, self._EXISTING_ASSET_CLAIMS)
+        ):
+            submitted = at_hour(
+                cfg.today - timedelta(days=asset_rng.randint(0, 90)),
+                asset_rng.randint(8, 18),
+                asset_rng.randint(0, 59),
+            )
+            rows.append(
+                (
+                    first_id + offset,
+                    emp_id,
+                    round(asset_rng.uniform(60.0, 400.0), 2),
+                    "equipment",
+                    category_id,
+                    asset_id,
+                    "Repair or accessory for an assigned asset",
+                    asset_rng.choices(("approved", "paid"), [1, 2])[0],
+                    iso_datetime(submitted),
+                )
+            )
+        return rows
 
     def _edge_case_claims(
         self,

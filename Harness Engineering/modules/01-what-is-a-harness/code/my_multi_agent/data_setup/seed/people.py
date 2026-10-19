@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from dataclasses import astuple, dataclass
 from datetime import timedelta
 from typing import ClassVar
@@ -22,6 +23,8 @@ class _Employee:
     status: str
     start_date: str
     end_date: str | None
+    end_reason: str | None
+    end_note: str | None
 
 
 class PeopleSeeder(Seeder):
@@ -58,6 +61,10 @@ class PeopleSeeder(Seeder):
 
     # Names the other parts of the system rely on. "Maya Rao" is the new hire in the onboarding
     # example, so she must not already exist; "Priya Shah" is the deliberate duplicate.
+    _END_REASONS: ClassVar[tuple[str, ...]] = (
+        "resignation", "layoff", "performance", "retirement", "other",
+    )
+
     _RESERVED_NAMES: ClassVar[frozenset[str]] = frozenset({"Maya Rao", "Priya Shah"})
     _DUPLICATE_NAME: ClassVar[str] = "Priya Shah"
 
@@ -71,6 +78,7 @@ class PeopleSeeder(Seeder):
             (
                 "emp_id", "emp_name", "salary", "state_id", "city_id",
                 "profession", "company_id", "status", "start_date", "end_date",
+                "end_reason", "end_note",
             ),
             [astuple(employee) for employee in employees],
         )
@@ -98,6 +106,8 @@ class PeopleSeeder(Seeder):
         weights = [self._BANDS[p][2] for p in professions]
         names = self._unique_names(ctx, cfg.n_employees)
         terminated = set(rng.sample(range(1, cfg.n_employees + 1), cfg.n_terminated))
+        # Termination reasons come from a stream of their own, so they never shift the other data.
+        reason_rng = random.Random(f"{cfg.seed}:end-reason")
 
         employees = []
         for emp_id in range(1, cfg.n_employees + 1):
@@ -114,9 +124,10 @@ class PeopleSeeder(Seeder):
                 start = cfg.today - timedelta(days=rng.randint(400, 3000))
                 end = cfg.today - timedelta(days=rng.randint(10, 180))
                 status, end_date = "terminated", iso_date(end)
+                end_reason = reason_rng.choice(self._END_REASONS)
             else:
                 start = cfg.today - timedelta(days=rng.randint(30, 3000))
-                status, end_date = "active", None
+                status, end_date, end_reason = "active", None, None
 
             employees.append(
                 _Employee(
@@ -130,6 +141,8 @@ class PeopleSeeder(Seeder):
                     status=status,
                     start_date=iso_date(start),
                     end_date=end_date,
+                    end_reason=end_reason,
+                    end_note=None,
                 )
             )
         return employees

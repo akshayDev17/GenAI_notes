@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
@@ -43,6 +44,16 @@ class ITSeeder(Seeder):
     _IN_REPAIR = 2
     _RETIRED = 1
 
+    # What goes wrong with each kind of equipment; used to describe hardware tickets.
+    _HARDWARE_ISSUES: ClassVar[dict[str, str]] = {
+        "laptop": "Laptop battery drains within an hour",
+        "monitor": "Monitor shows no signal",
+        "phone": "Phone screen is cracked",
+        "headset": "Headset has no audio in calls",
+        "keyboard": "Keyboard has stopped responding",
+        "standing_desk": "Standing desk motor will not raise the desk",
+    }
+
     _TICKET_TEMPLATES: ClassVar[dict[str, tuple[str, ...]]] = {
         "account": (
             "Cannot log in to my account",
@@ -65,8 +76,9 @@ class ITSeeder(Seeder):
         active = ctx.require("active_employee_ids")
         terminated = ctx.require("terminated_employee_ids")
         category_ids = self._seed_categories(ctx)
-        self._seed_assets(ctx, category_ids, active, terminated)
-        self._seed_tickets(ctx, active)
+        assignments = self._seed_assets(ctx, category_ids, active, terminated)
+        category_names = {category_id: name for name, category_id in category_ids.items()}
+        self._seed_tickets(ctx, active, assignments, category_names)
 
     def _seed_categories(self, ctx: SeedContext) -> dict[str, int]:
         ids = {spec.name: number for number, spec in enumerate(self._CATEGORIES, start=1)}
@@ -89,8 +101,10 @@ class ITSeeder(Seeder):
         category_ids: dict[str, int],
         active: list[int],
         terminated: list[int],
-    ) -> None:
+    ) -> dict[int, list[tuple[int, int]]]:
+        """Seed assets; return each employee's assigned units as (asset_id, category_id)."""
         rng, cfg = ctx.rng, ctx.config
+        assignments: dict[int, list[tuple[int, int]]] = defaultdict(list)
         in_stock_override = {
             "laptop": cfg.laptops_in_stock,
             "monitor": cfg.monitors_in_stock,
@@ -120,6 +134,8 @@ class ITSeeder(Seeder):
             states += [(None, "retired")] * self._RETIRED
 
             for number, (emp_id, status) in enumerate(states, start=1):
+                if emp_id is not None:
+                    assignments[emp_id].append((len(rows) + 1, category_id))
                 rows.append(
                     (
                         len(rows) + 1,
@@ -137,11 +153,19 @@ class ITSeeder(Seeder):
             rows,
         )
         ctx.publish("asset_holdings", {emp: dict(per_cat) for emp, per_cat in holdings.items()})
+        ctx.publish("asset_assignments", {emp: list(units) for emp, units in assignments.items()})
+        return assignments
 
-    def _seed_tickets(self, ctx: SeedContext, active: list[int]) -> None:
+    def _seed_tickets(
+        self,
+        ctx: SeedContext,
+        active: list[int],
+        assignments: dict[int, list[tuple[int, int]]],
+        category_names: dict[int, str],
+    ) -> None:
         rng, cfg = ctx.rng, ctx.config
         categories = list(self._TICKET_TEMPLATES)
-        rows = []
+        rows: list[list] = []
         for ticket_id in range(1, cfg.n_tickets + 1):
             category = rng.choices(categories, [4, 3, 3])[0]
             created = at_hour(
@@ -150,17 +174,36 @@ class ITSeeder(Seeder):
                 rng.randint(0, 59),
             )
             rows.append(
-                (
+                [
                     ticket_id,
                     rng.choice(active),
                     category,
                     rng.choice(self._TICKET_TEMPLATES[category]),
                     rng.choices(("open", "in_progress", "closed"), [12, 8, 10])[0],
                     iso_datetime(created),
-                )
+                    None,   # asset_id, filled below for hardware tickets
+                ]
             )
+
+        # A hardware ticket is about a specific unit, so it points at an asset and is owned by the
+        # employee who holds it. This runs on a stream of its own, so the draws above (and everything
+        # seeded after this cluster) are unchanged.
+        asset_rng = random.Random(f"{cfg.seed}:ticket-assets")
+        active_set = set(active)
+        units = sorted(
+            (asset_id, emp_id, category_id)
+            for emp_id, held in assignments.items()
+            if emp_id in active_set
+            for asset_id, category_id in held
+        )
+        for row in rows:
+            if row[2] == "hardware":
+                asset_id, emp_id, category_id = asset_rng.choice(units)
+                row[1], row[6] = emp_id, asset_id
+                row[3] = self._HARDWARE_ISSUES[category_names[category_id]]
+
         ctx.db.insert_many(
             "it_tickets",
-            ("ticket_id", "emp_id", "category", "description", "status", "created_at"),
+            ("ticket_id", "emp_id", "category", "description", "status", "created_at", "asset_id"),
             rows,
         )

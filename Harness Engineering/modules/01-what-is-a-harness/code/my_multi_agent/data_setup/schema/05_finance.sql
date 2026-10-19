@@ -16,11 +16,16 @@ CREATE TABLE expense_claims (
     -- Equipment claims name the KIND of asset by catalogue id (never free text);
     -- every other category leaves it NULL.
     asset_category_id  INTEGER REFERENCES asset_categories(category_id),
+    -- The specific unit, for claims about an existing asset (a repair, an accessory). Nullable:
+    -- purchases of new equipment have no unit yet, and non-equipment claims never do. The tool
+    -- checks that the unit's category matches asset_category_id.
+    asset_id           INTEGER REFERENCES assets(asset_id),
     description        TEXT,
     status             TEXT NOT NULL DEFAULT 'submitted'
                        CHECK (status IN ('submitted', 'needs_review', 'approved', 'rejected', 'paid')),
     submitted_at       TEXT NOT NULL,   -- ISO datetime
-    CHECK ((category = 'equipment') = (asset_category_id IS NOT NULL))
+    CHECK ((category = 'equipment') = (asset_category_id IS NOT NULL)),
+    CHECK (category = 'equipment' OR asset_id IS NULL)
 );
 
 CREATE INDEX idx_expense_claims_emp ON expense_claims(emp_id);
